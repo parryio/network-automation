@@ -1,0 +1,13 @@
+- name: core-sw01
+  ip: 192.0.2.10
+  platform: cisco_ios
+  username: CHANGE_ME
+  port: 22
+  secret: ""   # enable password if needed; else leave ""
+
+- name: edge-rtr01
+  ip: 192.0.2.20
+  platform: cisco_ios
+  username: CHANGE_ME
+  port: 22
+  secret: ""
