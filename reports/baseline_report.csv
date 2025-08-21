@@ -1,1 +1,3 @@
 device,status,details
+core-sw01,PASS,
+edge-rtr01,FAIL,MISSING: ip ssh version 2 | MISSING: service timestamps log datetime msec | MISSING: transport input ssh | MISSING_RE: ^ntp server \S+ | FORBID_RE: ^\s*(?!no\s)ip http server\b.*$
