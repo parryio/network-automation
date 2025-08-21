@@ -1,6 +1,10 @@
 --- before/edge-rtr01
 +++ after/edge-rtr01
-@@ -4,3 +4,11 @@
+@@ -1,6 +1,14 @@
+ version 17.3
+ hostname edge-rtr01
+-ip http server
++
  line vty 0 4
   transport input telnet
  end
