@@ -1,0 +1,11 @@
+--- before/edge-rtr01
++++ after/edge-rtr01
+@@ -4,3 +4,8 @@
+ line vty 0 4
+  transport input telnet
+ end
++!
++ntp server 1.0.0.1
++ntp server 1.1.1.1
++
++banner login ^CAuthorized access only^C
