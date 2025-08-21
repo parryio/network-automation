@@ -1,0 +1,13 @@
+profiles:
+  cisco_ios:
+    must_include:
+      - "ip ssh version 2"
+      - "service timestamps log datetime msec"
+      - "transport input ssh"
+    must_not_include:
+      - "ip http server"
+      - "snmp-server community public"
+      - "snmp-server community private"
+    regex_require:
+      - pattern: "^ntp server \\S+"
+    regex_forbid: []
