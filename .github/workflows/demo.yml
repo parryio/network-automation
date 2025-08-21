@@ -1,0 +1,24 @@
+name: demo
+on:
+  push: { branches: [ "main" ] }
+  pull_request: { branches: [ "main" ] }
+
+jobs:
+  run-demo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: python -m pip install --upgrade pip
+      - run: pip install -r requirements.txt
+      - run: python -m scripts.backup_configs --offline-from demo/configs --out configs
+      - run: python -m scripts.audit_baseline --configs configs/latest --report reports/baseline_report.csv
+      - run: python -m scripts.push_change --offline --before demo/configs/edge-rtr01.cfg --name edge-rtr01 --ntp "1.1.1.1,1.0.0.1" --banner "Authorized access only" --disable-http --fix-ssh --timestamps --diffs diffs --write-after --after-out configs/after_demo
+      - uses: actions/upload-artifact@v4
+        with:
+          name: demo-artifacts
+          path: |
+            configs/**
+            reports/**
+            diffs/**
