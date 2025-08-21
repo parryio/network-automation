@@ -1,4 +1,5 @@
 from __future__ import annotations
+import shutil
 import typer
 from rich import print
 from rich.table import Table
@@ -7,7 +8,7 @@ from pathlib import Path
 from typing import List, Tuple
 from scripts.utils import load_devices, get_password, make_stamp_dir, ios_run_cmd, connect, enable_if_needed, atomic_write
 
-app = typer.Typer(help="Backup running configs in parallel.")
+app = typer.Typer(help="Backup running configs in parallel or from local demo files.")
 
 DEFAULT_SHOW = {
     "cisco_ios": "show running-config",
@@ -31,10 +32,28 @@ def main(
     inventory: Path = typer.Option("devices.yaml", "--inventory", "-i", help="YAML inventory"),
     out: Path = typer.Option("configs", "--out", "-o", help="Output root folder"),
     workers: int = typer.Option(8, "--workers", "-w", help="Parallel workers"),
+    offline_from: Path = typer.Option(None, "--offline-from", help="Copy .cfg files from this folder into today's backup (demo mode)"),
 ):
+    day_dir = make_stamp_dir(out)
+
+    # Offline demo: copy existing .cfg files into today's folder
+    if offline_from:
+        table = Table(title=f"Offline Backup (copy) → {day_dir}")
+        table.add_column("Source")
+        table.add_column("Dest")
+        ok = 0
+        for p in sorted(Path(offline_from).glob("*.cfg")):
+            dest = day_dir / p.name
+            shutil.copy2(p, dest)
+            table.add_row(str(p), str(dest))
+            ok += 1
+        print(table)
+        print(f"[bold]{ok} file(s) copied[/bold]")
+        return
+
+    # Live mode: connect to devices
     devices = load_devices(inventory)
     password = get_password()
-    day_dir = make_stamp_dir(out)
 
     results: List[Tuple[str, str, bool, str]] = []
     with ThreadPoolExecutor(max_workers=workers) as ex:
