@@ -1,11 +1,14 @@
 --- before/edge-rtr01
 +++ after/edge-rtr01
-@@ -4,3 +4,8 @@
+@@ -4,3 +4,11 @@
  line vty 0 4
   transport input telnet
  end
-+!
-+ntp server 1.0.0.1
 +ntp server 1.1.1.1
++ntp server 1.0.0.1
 +
 +banner login ^CAuthorized access only^C
++no ip http server
++ip ssh version 2
++transport input ssh
++service timestamps log datetime msec
