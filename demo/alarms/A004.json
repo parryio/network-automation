@@ -1,0 +1,9 @@
+{
+  "alarm_id": "A004",
+  "severity": "critical",
+  "site": "site001",
+  "device": "rtr-site001-core",
+  "ip": "10.1.1.1",
+  "timestamp": "2025-08-24T03:55:27Z",
+  "symptom": "Power event detected; sudden drop in environmental telemetry"
+}

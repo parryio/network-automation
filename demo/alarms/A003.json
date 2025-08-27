@@ -1,0 +1,9 @@
+{
+  "alarm_id": "A003",
+  "severity": "minor",
+  "site": "site001",
+  "device": "rtr-site001-core",
+  "ip": "10.1.1.1",
+  "timestamp": "2025-08-23T11:14:42Z",
+  "symptom": "BGP neighbor down then up (flap detected)"
+}
