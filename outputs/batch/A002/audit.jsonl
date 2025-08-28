@@ -1,0 +1,38 @@
+{"ts": "2025-08-27T18:43:28.888518+00:00", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A002.json"}
+{"ts": "2025-08-27T18:43:28.889395+00:00", "event": "loaded", "neighbors": {"sw-site001-edge01": "10.1.2.11", "sw-site001-edge02": "10.1.2.12"}}
+{"ts": "2025-08-27T18:43:28.889758+00:00", "event": "validated", "count": 3}
+{"ts": "2025-08-27T18:43:28.890670+00:00", "event": "context_built", "diagram": "site001.txt", "prior_incidents": "prior_incidents.json", "config": "config.txt"}
+{"ts": "2025-08-27T18:43:28.891065+00:00", "event": "snow_draft", "attachments": ["site001.txt", "prior_incidents.json", "config.txt"]}
+{"ts": "2025-08-27T18:43:28.893165+00:00", "event": "packaged", "zip": "A002_pack.zip"}
+{"ts": "2025-08-27T18:43:28.893273+00:00", "event": "done"}
+{"ts": "2025-08-27T18:44:08.116444+00:00", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A002.json"}
+{"ts": "2025-08-27T18:44:08.117244+00:00", "event": "loaded", "neighbors": {"sw-site001-edge01": "10.1.2.11", "sw-site001-edge02": "10.1.2.12"}}
+{"ts": "2025-08-27T18:44:08.117618+00:00", "event": "validated", "count": 3}
+{"ts": "2025-08-27T18:44:08.118641+00:00", "event": "context_built", "diagram": "site001.txt", "prior_incidents": "prior_incidents.json", "config": "config.txt"}
+{"ts": "2025-08-27T18:44:08.119128+00:00", "event": "snow_draft", "attachments": ["site001.txt", "prior_incidents.json", "config.txt"]}
+{"ts": "2025-08-27T18:44:08.121247+00:00", "event": "packaged", "zip": "A002_pack.zip"}
+{"ts": "2025-08-27T18:44:08.121349+00:00", "event": "done"}
+{"ts": "2025-08-28T15:26:59.602056Z", "event": "start", "alarm": "demo/alarms/A002.json"}
+{"ts": "2025-08-28T15:26:59.602179Z", "event": "alarm_loaded", "id": "A002"}
+{"ts": "2025-08-28T15:26:59.602955Z", "event": "context_built", "incidents_count": 2, "has_config": true}
+{"ts": "2025-08-28T15:26:59.603286Z", "event": "probes_gathered", "offline": true}
+{"ts": "2025-08-28T15:26:59.603360Z", "event": "insights_ready"}
+{"ts": "2025-08-28T15:26:59.603747Z", "event": "snow_draft_written"}
+{"ts": "2025-08-28T15:26:59.603987Z", "event": "validation_written"}
+{"ts": "2025-08-28T15:26:59.606579Z", "event": "pack_zipped", "pack": "outputs/batch/A002/A002_pack.zip"}
+{"ts": "2025-08-28T15:27:34.427576Z", "event": "start", "alarm": "demo/alarms/A002.json"}
+{"ts": "2025-08-28T15:27:34.427699Z", "event": "alarm_loaded", "id": "A002"}
+{"ts": "2025-08-28T15:27:34.428742Z", "event": "context_built", "incidents_count": 2, "has_config": true}
+{"ts": "2025-08-28T15:27:34.429288Z", "event": "probes_gathered", "offline": true}
+{"ts": "2025-08-28T15:27:34.429460Z", "event": "insights_ready"}
+{"ts": "2025-08-28T15:27:34.430157Z", "event": "snow_draft_written"}
+{"ts": "2025-08-28T15:27:34.430411Z", "event": "validation_written"}
+{"ts": "2025-08-28T15:27:34.432615Z", "event": "pack_zipped", "pack": "outputs/batch/A002/A002_pack.zip"}
+{"ts": "2025-08-28T15:40:02.966702Z", "event": "start", "alarm": "demo/alarms/A002.json"}
+{"ts": "2025-08-28T15:40:02.966844Z", "event": "alarm_loaded", "id": "A002"}
+{"ts": "2025-08-28T15:40:02.968255Z", "event": "context_built", "incidents_count": 2, "has_config": true}
+{"ts": "2025-08-28T15:40:02.968595Z", "event": "probes_gathered", "offline": true}
+{"ts": "2025-08-28T15:40:02.968677Z", "event": "insights_ready"}
+{"ts": "2025-08-28T15:40:02.969120Z", "event": "snow_draft_written"}
+{"ts": "2025-08-28T15:40:02.969372Z", "event": "validation_written"}
+{"ts": "2025-08-28T15:40:02.972089Z", "event": "pack_zipped", "pack": "outputs/batch/A002/A002_pack.zip"}
