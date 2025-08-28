@@ -1,9 +1,7 @@
 {
-  "alarm_id": "A002",
-  "severity": "major",
-  "site": "site001",
+  "id": "A002",
   "device": "rtr-site001-core",
-  "ip": "10.1.1.1",
-  "timestamp": "2025-08-22T09:05:10Z",
-  "symptom": "Link down to sw-site001-edge01; interface errors rising"
+  "site": "site001",
+  "severity": "minor",
+  "description": "BGP neighbor flap count elevated"
 }

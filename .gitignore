@@ -1,3 +1,7 @@
+__pycache__/
+*.pyc
+outputs/
+*.zip
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -217,3 +221,6 @@ reports/
 diffs/
 configs/after_demo/
 configs/latest/
+
+# build/demo artifacts
+outputs/

@@ -1,4 +1,6 @@
+! demo router config
 hostname rtr-site001-core
-ntp server 192.0.2.10
-interface TenGigabitEthernet0/0
- description uplink to POP-12
+interface Gi0/0
+ description Uplink
+ ip address 192.0.2.10 255.255.255.0
+!

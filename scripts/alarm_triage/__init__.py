@@ -1,12 +1,11 @@
-"""Alarm Triage read-only module.
+"""Alarm Triage package.
 
-Converts an alarm JSON into validation results, context pack, and a draft
-ServiceNow payload (JSON + Markdown) plus a zipped artifact.
+Provides read-only, offline-capable triage utilities used by CI and demos.
 
-CLI usage:
-    python -m scripts.alarm_triage.triage --alarm demo/alarms/A001.json --out outputs/A001 --offline
+Public helper functions (imported in tests):
+    process_alarm: run single alarm triage
+    process_batch: run batch triage over a glob
 """
 
-__all__ = [
-    "triage",
-]
+from .triage import process_alarm  # noqa: F401
+from .batch import process_batch  # noqa: F401

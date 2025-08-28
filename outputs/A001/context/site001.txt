@@ -1,3 +1,0 @@
-[site001] CORE --(uplink)--> POP-12
-           |                |
-         EDGE01           EDGE02

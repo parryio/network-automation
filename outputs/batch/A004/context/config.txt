@@ -1,4 +1,0 @@
-hostname rtr-site001-core
-ntp server 192.0.2.10
-interface TenGigabitEthernet0/0
- description uplink to POP-12

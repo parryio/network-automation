@@ -1,5 +1,4 @@
 {
-  "10.1.1.1": {"status": "FAIL", "rtt_ms_avg": null, "loss_pct": 100, "hops": [], "hop_count": 0},
-  "10.1.2.11": {"status": "PASS", "rtt_ms_avg": 12, "loss_pct": 0, "hops": ["10.1.2.1", "10.1.2.11"], "hop_count": 2},
-  "10.1.2.12": {"status": "PASS", "rtt_ms_avg": 11, "loss_pct": 0, "hops": ["10.1.2.1", "10.1.2.12"], "hop_count": 2}
+  "ping": "PING rtr-site001-core (192.0.2.10): 56 data bytes\n64 bytes from 192.0.2.10: icmp_seq=0 ttl=62 time=1.0 ms\n64 bytes from 192.0.2.10: icmp_seq=1 ttl=62 time=1.1 ms\n--- rtr-site001-core ping statistics ---\n2 packets transmitted, 2 packets received, 0% packet loss",
+  "traceroute": "traceroute to rtr-site001-core (192.0.2.10), 5 hops max\n 1  192.0.2.1  0.5 ms\n 2  192.0.2.10  0.9 ms"
 }

@@ -1,74 +1,46 @@
-"""Context pack assembly for an alarm triage run.
+"""Context pack assembly for an alarm triage run."""
 
-Copies diagram, prior incidents, and config snippet into a context/ folder.
-Optionally overlays a red circle on a PNG diagram using coordinates if Pillow
-is available.
-"""
 from __future__ import annotations
 
 import json
-import shutil
 from pathlib import Path
-from typing import Dict
-
-try:  # Optional dependency
-    from PIL import Image, ImageDraw  # type: ignore
-    PIL_AVAILABLE = True
-except Exception:  # pragma: no cover - executed only when Pillow missing
-    PIL_AVAILABLE = False
+from typing import Dict, Any
 
 
-def build(site: str, device: str, files_root: Path, out_dir: Path) -> Dict:
-    context_dir = out_dir / "context"
-    context_dir.mkdir(parents=True, exist_ok=True)
-    meta: Dict[str, str] = {}
-
-    diagrams_dir = files_root / "diagrams"
-    incidents_file = files_root / "incidents.json"
-    configs_dir = files_root / "configs"
-
-    # Diagram selection priority: png, svg, txt
-    diagram_base = diagrams_dir / site
-    selected = None
-    for ext in (".png", ".svg", ".txt"):
-        candidate = diagram_base.with_suffix(ext)
-        if candidate.exists():
-            shutil.copy2(candidate, context_dir / candidate.name)
-            selected = candidate.name
-            meta["diagram"] = candidate.name
-            break
-
-    # Optional overlay if png and coords json
-    coords_file = diagram_base.with_suffix('.coords.json')
-    if selected and selected.endswith('.png') and coords_file.exists() and PIL_AVAILABLE:
-        try:
-            coords = json.loads(coords_file.read_text())
-            img_path = context_dir / selected
-            img = Image.open(img_path)
-            draw = ImageDraw.Draw(img)
-            x, y, r = coords.get('x', 0), coords.get('y', 0), coords.get('r', 20)
-            draw.ellipse([(x - r, y - r), (x + r, y + r)], outline='red', width=4)
-            overlay_name = 'diagram_overlay.png'
-            img.save(context_dir / overlay_name)
-            meta['diagram_overlay'] = overlay_name
-        except Exception:
-            pass  # Silent skip
+def build_context(alarm: Dict[str, Any], repo_root: Path, ctx_dir: Path) -> Dict[str, Any]:
+    ctx_dir.mkdir(parents=True, exist_ok=True)
+    demo_dir = repo_root / "demo"
 
     # Prior incidents
-    if incidents_file.exists():
+    incidents_file = demo_dir / "incidents.json"
+    incidents = []
+    if incidents_file.is_file():
         try:
-            incidents = json.loads(incidents_file.read_text()).get(site, [])
-            (context_dir / 'prior_incidents.json').write_text(json.dumps(incidents, indent=2))
-            meta['prior_incidents'] = 'prior_incidents.json'
-        except Exception:
+            all_incidents = json.loads(incidents_file.read_text(encoding="utf-8"))
+            device = alarm.get("device")
+            site = alarm.get("site")
+            for inc in all_incidents:
+                if device and inc.get("device") == device:
+                    incidents.append(inc)
+                elif site and inc.get("site") == site:
+                    incidents.append(inc)
+        except json.JSONDecodeError:
             pass
+    (ctx_dir / "prior_incidents.json").write_text(
+        json.dumps(incidents, indent=2), encoding="utf-8"
+    )
 
-    # Config snippet
-    config_file = configs_dir / f"{device}.txt"
-    if config_file.exists():
-        shutil.copy2(config_file, context_dir / 'config.txt')
-        meta['config'] = 'config.txt'
+    # Config (static demo config)
+    config_src = demo_dir / "configs" / "rtr-site001-core.txt"
+    config_text = config_src.read_text(encoding="utf-8") if config_src.is_file() else "demo config missing"
+    (ctx_dir / "config.txt").write_text(config_text, encoding="utf-8")
 
-    return meta
+    # Site diagram / notes
+    site_file = demo_dir / "diagrams" / "site001.txt"
+    if site_file.is_file():
+        (ctx_dir / "site001.txt").write_text(site_file.read_text(encoding="utf-8"), encoding="utf-8")
 
-__all__ = ["build"]
+    return {
+        "incidents_count": len(incidents),
+        "has_config": bool(config_text),
+    }

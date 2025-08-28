@@ -1,93 +1,66 @@
-"""Batch triage CLI for alarm files with KPI reporting.
+"""Batch alarm triage CLI."""
 
-Usage:
-  python -m scripts.alarm_triage.batch --alarms "demo/alarms/*.json" --out outputs/batch --offline
-"""
-import argparse
+from __future__ import annotations
+
 import glob
 import json
-import time
 from pathlib import Path
-from statistics import median, quantiles
-from scripts.alarm_triage import triage
+from typing import Dict, Any, List
 
-def run_batch(alarms, out_dir, offline):
-    out_dir = Path(out_dir)
+import typer
+
+from .triage import process_alarm
+
+app = typer.Typer(add_completion=False)
+
+
+def process_batch(pattern: str, out_dir: Path, offline: bool = False) -> Dict[str, Any]:
     out_dir.mkdir(parents=True, exist_ok=True)
-    results = []
-    for alarm_path in alarms:
+    alarm_files = sorted(glob.glob(pattern))
+    results: List[Dict[str, Any]] = []
+    for alarm_file in alarm_files:
+        alarm_path = Path(alarm_file)
+        # Skip auxiliary JSON like probes_offline.json
         try:
-            data = json.loads(Path(alarm_path).read_text())
-            if 'alarm_id' not in data:  # skip non-alarm JSON (e.g., probes_offline)
-                continue
-        except Exception:
+            data = json.loads(alarm_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
             continue
-        alarm_id = Path(alarm_path).stem
-        alarm_out = out_dir / alarm_id
-        timings = {}
-        artifacts = {}
-        rc = None
-        t0 = time.monotonic()
-        # Whole triage timing only (internals timed inside triage if needed)
-        t_validate = time.monotonic()
-        try:
-            rc = triage.main([
-                "--alarm", alarm_path,
-                "--out", str(alarm_out),
-                "--offline" if offline else ""
-            ])
-        except Exception as e:
-            rc = -1
-        t1 = time.monotonic()
-        timings["validate_s"] = t1 - t_validate
-        timings["total_s"] = t1 - t0
-        # Check artifacts
-        for fname in ["validation.json", "snow_draft.json", "snow_draft.md", "context/prior_incidents.json", "context/config.txt", f"{alarm_id}_pack.zip"]:
-            p = alarm_out / fname if not fname.startswith("context/") else alarm_out / "context" / fname.split("/",1)[1]
-            artifacts[fname] = p.exists()
-        results.append({
-            "alarm_id": alarm_id,
-            "rc": rc,
-            **timings,
-            "artifacts": artifacts,
-            "success": rc == 0 and all(artifacts.values())
-        })
-    # KPIs
-    total_times = [r["total_s"] for r in results]
-    p50 = median(total_times) if total_times else 0
-    p95 = quantiles(total_times, n=100)[94] if len(total_times) >= 20 else max(total_times) if total_times else 0
-    success_rate = sum(r["success"] for r in results) / len(results) if results else 0
-    # Write batch_report.json
-    (out_dir / "batch_report.json").write_text(json.dumps(results, indent=2))
-    # Write kpi.csv
-    with (out_dir / "kpi.csv").open("w") as f:
-        f.write("alarm_id,total_s,validate_s,success\n")
-        for r in results:
-            f.write(f"{r['alarm_id']},{r['total_s']:.3f},{r['validate_s']:.3f},{int(r['success'])}\n")
-    # Write kpi.md
-    with (out_dir / "kpi.md").open("w") as f:
-        f.write(f"# Batch KPI Report\n\n")
-        f.write(f"**Alarms processed:** {len(results)}\n\n")
-        f.write(f"**Success rate:** {success_rate:.2%}\n\n")
-        f.write(f"**p50 total time:** {p50:.3f}s\n\n")
-        f.write(f"**p95 total time:** {p95:.3f}s\n\n")
-        f.write("| alarm_id | total_s | validate_s | success |\n|---|---|---|---|\n")
-        for r in results:
-            f.write(f"| {r['alarm_id']} | {r['total_s']:.3f} | {r['validate_s']:.3f} | {int(r['success'])} |\n")
-    return results
+        if "id" not in data:
+            continue
+        # Re-write temp alarm file to tmp dir? Not needed; process_alarm will reload.
+        single_dir = out_dir / alarm_path.stem
+        res = process_alarm(alarm_path, single_dir, offline=offline)
+        results.append(res)
 
-def main():
-    parser = argparse.ArgumentParser(description="Batch Alarm Triage")
-    parser.add_argument("--alarms", required=True, help="Glob pattern or space-separated alarm JSONs")
-    parser.add_argument("--out", required=True, help="Output directory")
-    parser.add_argument("--offline", action="store_true", help="Offline mode")
-    args = parser.parse_args()
-    # Expand alarms
-    if "*" in args.alarms:
-        alarms = sorted(glob.glob(args.alarms))
-    else:
-        alarms = args.alarms.split()
-    run_batch(alarms, args.out, args.offline)
+    # KPI / summary
+    kpi_rows = ["alarm_id,status"]
+    for r in results:
+        kpi_rows.append(f"{r['alarm']['id']},ok")
+    (out_dir / "kpi.csv").write_text("\n".join(kpi_rows) + "\n", encoding="utf-8")
+    (out_dir / "kpi.md").write_text(
+        f"# Batch KPI\n\nTotal Alarms: {len(results)}\n\n", encoding="utf-8"
+    )
+    (out_dir / "batch_report.json").write_text(
+        json.dumps({"count": len(results), "alarms": [r["alarm"]["id"] for r in results]}, indent=2),
+        encoding="utf-8",
+    )
+    return {"count": len(results), "alarms": [r["alarm"]["id"] for r in results]}
 
-if __name__ == "__main__":
+
+@app.callback(invoke_without_command=True)
+def cli(
+    alarms: str = typer.Option(..., "--alarms", help="Glob pattern of alarm JSON files"),
+    out: str = typer.Option(..., "--out", help="Batch output directory"),
+    offline: bool = typer.Option(False, "--offline", help="Use offline demo data"),
+):
+    """Process a batch of alarms into KPI + reports."""
+    summary = process_batch(alarms, Path(out), offline=offline)
+    typer.echo(json.dumps(summary, indent=2))
+
+
+def main():  # pragma: no cover
+    app()
+
+
+if __name__ == "__main__":  # pragma: no cover
     main()

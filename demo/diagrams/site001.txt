@@ -1,3 +1,1 @@
-[site001] CORE --(uplink)--> POP-12
-           |                |
-         EDGE01           EDGE02
+Site001 logical layout:\nCORE(rtr-site001-core)---DIST(sw01)---ACCESS(sw02)
