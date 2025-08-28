@@ -1,0 +1,5 @@
+{
+  "10.1.1.1": {"status": "FAIL", "rtt_ms_avg": null, "loss_pct": 100, "hops": [], "hop_count": 0},
+  "10.1.2.11": {"status": "PASS", "rtt_ms_avg": 12, "loss_pct": 0, "hops": ["10.1.2.1", "10.1.2.11"], "hop_count": 2},
+  "10.1.2.12": {"status": "PASS", "rtt_ms_avg": 11, "loss_pct": 0, "hops": ["10.1.2.1", "10.1.2.12"], "hop_count": 2}
+}
