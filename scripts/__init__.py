@@ -1,14 +1,7 @@
-<<<<<<< HEAD
 """Top-level package marker so tests can `import scripts`.
 
-Alarm triage tests import modules as `from scripts.alarm_triage import triage`.
-Keeping this file minimal preserves existing behavior while ensuring
-explicit package recognition under pytest collection.
+Consolidated after rebase: provides explicit package recognition under
+pytest, exports alarm_triage, and avoids merge conflict markers.
 """
 
-__all__ = [
-	"alarm_triage",
-]
-=======
-"""Top-level package marker for the 'scripts' namespace."""
->>>>>>> 04e992d (update)
+__all__ = ["alarm_triage"]

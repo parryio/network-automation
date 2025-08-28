@@ -1,6 +1,14 @@
-"""Single alarm triage CLI.
+"""Alarm triage core + CLI.
 
-Usage (CI / demo):
+New public API (importable):
+    triage_one(alarm_path: Path, out_dir: Path, offline=True, emit_draft=True)
+    triage_batch(alarms_glob: str, out_root: Path, offline=True, emit_draft=True)
+
+Legacy (deprecated) API kept as thin shims until next major:
+    process_alarm -> triage_one
+    process_batch -> triage_batch
+
+CLI (single alarm mode retained for backwards compatibility):
     python -m scripts.alarm_triage.triage --alarm demo/alarms/A001.json --out outputs/A001 --offline
 """
 
@@ -10,7 +18,7 @@ import json
 import zipfile
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Iterable, List
 
 import typer
 
@@ -44,7 +52,7 @@ def _zip_pack(out_dir: Path) -> Path:
     return pack_path
 
 
-def process_alarm(alarm_path: Path, out_dir: Path, offline: bool = False) -> Dict[str, Any]:
+def _triage_single(alarm_path: Path, out_dir: Path, offline: bool = False, emit_draft: bool = True) -> Dict[str, Any]:
     out_dir.mkdir(parents=True, exist_ok=True)
     audit_file = out_dir / "audit.jsonl"
     _write_audit_line(audit_file, "start", alarm=str(alarm_path))
@@ -83,6 +91,33 @@ def process_alarm(alarm_path: Path, out_dir: Path, offline: bool = False) -> Dic
     }
 
 
+# ---------------- New exported functions --------------------------------------
+def triage_one(alarm_path: Path, out_dir: Path, offline: bool = True, emit_draft: bool = True, run_id: str | None = None):
+    """Triage a single alarm JSON file into an output directory.
+
+    Parameters mirror legacy process_alarm with extended args for future.
+    """
+    return _triage_single(alarm_path, out_dir, offline=offline, emit_draft=emit_draft)
+
+
+def triage_batch(alarms_glob: str, out_root: Path, offline: bool = True, emit_draft: bool = True, run_id: str | None = None):
+    """Triage all alarms matching a glob into per-alarm subdirectories under out_root."""
+    paths = sorted(Path().glob(alarms_glob))
+    results: List[Dict[str, Any]] = []
+    for p in paths:
+        if not p.is_file():
+            continue
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if not isinstance(data, dict) or not data.get("id"):
+            continue
+        out_dir = out_root / p.stem
+        results.append(_triage_single(p, out_dir, offline=offline, emit_draft=emit_draft))
+    return results
+
+
 @app.callback(invoke_without_command=True)
 def cli(
     alarm: str = typer.Option(..., "--alarm", help="Path to alarm JSON file"),
@@ -93,8 +128,8 @@ def cli(
     if alarm and out:  # invoked directly
         alarm_path = Path(alarm)
         out_dir = Path(out)
-        result = process_alarm(alarm_path, out_dir, offline=offline)
-        typer.echo(json.dumps({"status": "ok", "files": len(result["files"])}, indent=2))
+    result = triage_one(alarm_path, out_dir, offline=offline)
+    typer.echo(json.dumps({"status": "ok", "files": len(result["files"])}, indent=2))
 
 
 def main():  # pragma: no cover - entrypoint
@@ -103,3 +138,14 @@ def main():  # pragma: no cover - entrypoint
 
 if __name__ == "__main__":  # pragma: no cover
     main()
+
+# --- Back-compat shims (do not remove until next major) -----------------------
+from pathlib import Path as _Path  # noqa: E402
+
+def process_alarm(alarm_path, out_dir, offline: bool = True, emit_draft: bool = True):  # type: ignore
+    """Compat shim: old name -> triage_one"""
+    return triage_one(_Path(alarm_path), _Path(out_dir), offline=offline, emit_draft=emit_draft)
+
+def process_batch(alarms_glob, out_root, offline: bool = True, emit_draft: bool = True):  # type: ignore
+    """Compat shim: old name -> triage_batch"""
+    return triage_batch(alarms_glob, _Path(out_root), offline=offline, emit_draft=emit_draft)

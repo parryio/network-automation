@@ -5,21 +5,34 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Allow creating draft releases with default GITHUB_TOKEN
+permissions:
+  contents: write
+
 jobs:
+<<<<<<< HEAD
 <<<<<<< HEAD
   alarm-triage:
 =======
   triage:
 >>>>>>> 04e992d (update)
+=======
+  alarm-triage:
+>>>>>>> bfe0f4c (fix(ci): grant release perms and gate draft release to workflow_dispatch)
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
+<<<<<<< HEAD
 <<<<<<< HEAD
         python-version: ["3.11"]
 =======
         python: ["3.11"]
       fail-fast: false
+=======
+        python-version: ["3.11"]
+>>>>>>> bfe0f4c (fix(ci): grant release perms and gate draft release to workflow_dispatch)
     env:
       PYTHONPATH: .
 >>>>>>> 04e992d (update)
@@ -28,6 +41,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
+<<<<<<< HEAD
 <<<<<<< HEAD
           python-version: ${{ matrix.python-version }}
       - name: Install deps
@@ -68,19 +82,44 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 =======
           python-version: ${{ matrix.python }}
+=======
+          python-version: ${{ matrix.python-version }}
+>>>>>>> bfe0f4c (fix(ci): grant release perms and gate draft release to workflow_dispatch)
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install streamlit pillow pytest
-      - name: Run triage (offline)
-        run: python -m scripts.alarm_triage.triage --alarm demo/alarms/A001.json --out outputs/A001 --offline
-      - name: Pytest
+          pip install -r requirements.txt
+      - name: Run offline triage
+        run: |
+          python -m scripts.alarm_triage.triage --alarm demo/alarms/A001.json --out outputs/A001 --offline
+      - name: Run tests
         run: python -m pytest -q
-      - name: Run batch (offline)
+      - name: Run batch triage KPI
         run: python -m scripts.alarm_triage.batch --alarms "demo/alarms/*.json" --out outputs/batch --offline
-      - name: Upload outputs
+      - name: Upload outputs artifact
         uses: actions/upload-artifact@v4
         with:
           name: alarm-triage-outputs-${{ matrix.os }}
           path: outputs/**
+<<<<<<< HEAD
 >>>>>>> 04e992d (update)
+=======
+          if-no-files-found: warn
+      - name: Upload batch KPI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: alarm-triage-kpi-${{ matrix.os }}
+          path: outputs/batch/**
+          if-no-files-found: warn
+      - name: Draft Release (v0.2.1)
+        if: github.event_name == 'workflow_dispatch' && matrix.os == 'ubuntu-latest'
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          tag_name: v0.2.1
+          name: "Alarm Triage v0.2.1"
+          body: |
+            See CHANGELOG.md for details.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+>>>>>>> bfe0f4c (fix(ci): grant release perms and gate draft release to workflow_dispatch)
