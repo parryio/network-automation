@@ -28,3 +28,67 @@
 {"ts": "2025-08-28T15:40:02.730798Z", "event": "snow_draft_written"}
 {"ts": "2025-08-28T15:40:02.731057Z", "event": "validation_written"}
 {"ts": "2025-08-28T15:40:02.734049Z", "event": "pack_zipped", "pack": "outputs/A001/A001_pack.zip"}
+{"ts": "2025-08-28T16:41:54.204392Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A001.json"}
+{"ts": "2025-08-28T16:41:54.228440Z", "event": "alarm_loaded", "id": "A001"}
+{"ts": "2025-08-28T16:41:54.229400Z", "event": "context_built", "incidents_count": 2, "has_config": true}
+{"ts": "2025-08-28T16:41:54.229764Z", "event": "probes_gathered", "offline": true}
+{"ts": "2025-08-28T16:41:54.229847Z", "event": "insights_ready"}
+{"ts": "2025-08-28T16:41:54.230273Z", "event": "snow_draft_written"}
+{"ts": "2025-08-28T16:41:54.230526Z", "event": "validation_written"}
+{"ts": "2025-08-28T16:41:54.233329Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/A001/A001_pack.zip"}
+{"ts": "2025-08-28T16:41:57.641345Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A001.json"}
+{"ts": "2025-08-28T16:41:57.641545Z", "event": "alarm_loaded", "id": "A001"}
+{"ts": "2025-08-28T16:41:57.642473Z", "event": "context_built", "incidents_count": 2, "has_config": true}
+{"ts": "2025-08-28T16:41:57.642836Z", "event": "probes_gathered", "offline": true}
+{"ts": "2025-08-28T16:41:57.642918Z", "event": "insights_ready"}
+{"ts": "2025-08-28T16:41:57.643493Z", "event": "snow_draft_written"}
+{"ts": "2025-08-28T16:41:57.643790Z", "event": "validation_written"}
+{"ts": "2025-08-28T16:41:57.646556Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/A001/A001_pack.zip"}
+{"ts": "2025-08-28T16:41:58.358775Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A001.json"}
+{"ts": "2025-08-28T16:41:58.359043Z", "event": "alarm_loaded", "id": "A001"}
+{"ts": "2025-08-28T16:41:58.360072Z", "event": "context_built", "incidents_count": 2, "has_config": true}
+{"ts": "2025-08-28T16:41:58.360465Z", "event": "probes_gathered", "offline": true}
+{"ts": "2025-08-28T16:41:58.360550Z", "event": "insights_ready"}
+{"ts": "2025-08-28T16:41:58.361012Z", "event": "snow_draft_written"}
+{"ts": "2025-08-28T16:41:58.361303Z", "event": "validation_written"}
+{"ts": "2025-08-28T16:41:58.364244Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/A001/A001_pack.zip"}
+{"ts": "2025-08-28T16:49:59.408469Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A001.json"}
+{"ts": "2025-08-28T16:49:59.408694Z", "event": "alarm_loaded", "id": "A001"}
+{"ts": "2025-08-28T16:49:59.409704Z", "event": "context_built", "incidents_count": 2, "has_config": true}
+{"ts": "2025-08-28T16:49:59.410115Z", "event": "probes_gathered", "offline": true}
+{"ts": "2025-08-28T16:49:59.410227Z", "event": "insights_ready"}
+{"ts": "2025-08-28T16:49:59.410681Z", "event": "snow_draft_written"}
+{"ts": "2025-08-28T16:49:59.410956Z", "event": "validation_written"}
+{"ts": "2025-08-28T16:49:59.413854Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/A001/A001_pack.zip"}
+{"ts": "2025-08-28T16:50:01.996555Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A001.json"}
+{"ts": "2025-08-28T16:50:01.996772Z", "event": "alarm_loaded", "id": "A001"}
+{"ts": "2025-08-28T16:50:01.997672Z", "event": "context_built", "incidents_count": 2, "has_config": true}
+{"ts": "2025-08-28T16:50:01.998035Z", "event": "probes_gathered", "offline": true}
+{"ts": "2025-08-28T16:50:01.998120Z", "event": "insights_ready"}
+{"ts": "2025-08-28T16:50:01.998535Z", "event": "snow_draft_written"}
+{"ts": "2025-08-28T16:50:01.998773Z", "event": "validation_written"}
+{"ts": "2025-08-28T16:50:02.001535Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/A001/A001_pack.zip"}
+{"ts": "2025-08-28T16:52:00.490959Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A001.json"}
+{"ts": "2025-08-28T16:52:00.491305Z", "event": "alarm_loaded", "id": "A001"}
+{"ts": "2025-08-28T16:52:00.492377Z", "event": "context_built", "incidents_count": 2, "has_config": true}
+{"ts": "2025-08-28T16:52:00.492765Z", "event": "probes_gathered", "offline": true}
+{"ts": "2025-08-28T16:52:00.492854Z", "event": "insights_ready"}
+{"ts": "2025-08-28T16:52:00.493344Z", "event": "snow_draft_written"}
+{"ts": "2025-08-28T16:52:00.493629Z", "event": "validation_written"}
+{"ts": "2025-08-28T16:52:00.496692Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/A001/A001_pack.zip"}
+{"ts": "2025-08-28T16:52:02.111642Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A001.json"}
+{"ts": "2025-08-28T16:52:02.111943Z", "event": "alarm_loaded", "id": "A001"}
+{"ts": "2025-08-28T16:52:02.112953Z", "event": "context_built", "incidents_count": 2, "has_config": true}
+{"ts": "2025-08-28T16:52:02.113324Z", "event": "probes_gathered", "offline": true}
+{"ts": "2025-08-28T16:52:02.113403Z", "event": "insights_ready"}
+{"ts": "2025-08-28T16:52:02.113802Z", "event": "snow_draft_written"}
+{"ts": "2025-08-28T16:52:02.114065Z", "event": "validation_written"}
+{"ts": "2025-08-28T16:52:02.116919Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/A001/A001_pack.zip"}
+{"ts": "2025-08-28T16:52:34.371085Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A001.json"}
+{"ts": "2025-08-28T16:52:34.371283Z", "event": "alarm_loaded", "id": "A001"}
+{"ts": "2025-08-28T16:52:34.372237Z", "event": "context_built", "incidents_count": 2, "has_config": true}
+{"ts": "2025-08-28T16:52:34.372625Z", "event": "probes_gathered", "offline": true}
+{"ts": "2025-08-28T16:52:34.372703Z", "event": "insights_ready"}
+{"ts": "2025-08-28T16:52:34.373133Z", "event": "snow_draft_written"}
+{"ts": "2025-08-28T16:52:34.373381Z", "event": "validation_written"}
+{"ts": "2025-08-28T16:52:34.376152Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/A001/A001_pack.zip"}

@@ -36,3 +36,67 @@
 {"ts": "2025-08-28T15:40:02.974400Z", "event": "snow_draft_written"}
 {"ts": "2025-08-28T15:40:02.974646Z", "event": "validation_written"}
 {"ts": "2025-08-28T15:40:02.977439Z", "event": "pack_zipped", "pack": "outputs/batch/A003/A003_pack.zip"}
+{"ts": "2025-08-28T16:24:33.358651Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A003.json"}
+{"ts": "2025-08-28T16:24:33.360910Z", "event": "alarm_loaded", "id": "A003"}
+{"ts": "2025-08-28T16:24:33.361760Z", "event": "context_built", "incidents_count": 2, "has_config": true}
+{"ts": "2025-08-28T16:24:33.362132Z", "event": "probes_gathered", "offline": true}
+{"ts": "2025-08-28T16:24:33.362209Z", "event": "insights_ready"}
+{"ts": "2025-08-28T16:24:33.362596Z", "event": "snow_draft_written"}
+{"ts": "2025-08-28T16:24:33.362855Z", "event": "validation_written"}
+{"ts": "2025-08-28T16:24:33.365533Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/batch/A003/A003_pack.zip"}
+{"ts": "2025-08-28T16:24:52.789905Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A003.json"}
+{"ts": "2025-08-28T16:24:52.790046Z", "event": "alarm_loaded", "id": "A003"}
+{"ts": "2025-08-28T16:24:52.790892Z", "event": "context_built", "incidents_count": 2, "has_config": true}
+{"ts": "2025-08-28T16:24:52.791254Z", "event": "probes_gathered", "offline": true}
+{"ts": "2025-08-28T16:24:52.791338Z", "event": "insights_ready"}
+{"ts": "2025-08-28T16:24:52.791728Z", "event": "snow_draft_written"}
+{"ts": "2025-08-28T16:24:52.791985Z", "event": "validation_written"}
+{"ts": "2025-08-28T16:24:52.794637Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/batch/A003/A003_pack.zip"}
+{"ts": "2025-08-28T16:30:30.127166Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A003.json"}
+{"ts": "2025-08-28T16:30:30.127346Z", "event": "alarm_loaded", "id": "A003"}
+{"ts": "2025-08-28T16:30:30.128301Z", "event": "context_built", "incidents_count": 2, "has_config": true}
+{"ts": "2025-08-28T16:30:30.128678Z", "event": "probes_gathered", "offline": true}
+{"ts": "2025-08-28T16:30:30.128769Z", "event": "insights_ready"}
+{"ts": "2025-08-28T16:30:30.129220Z", "event": "snow_draft_written"}
+{"ts": "2025-08-28T16:30:30.129514Z", "event": "validation_written"}
+{"ts": "2025-08-28T16:30:30.132709Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/batch/A003/A003_pack.zip"}
+{"ts": "2025-08-28T16:30:46.744605Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A003.json"}
+{"ts": "2025-08-28T16:30:46.744783Z", "event": "alarm_loaded", "id": "A003"}
+{"ts": "2025-08-28T16:30:46.745676Z", "event": "context_built", "incidents_count": 2, "has_config": true}
+{"ts": "2025-08-28T16:30:46.746058Z", "event": "probes_gathered", "offline": true}
+{"ts": "2025-08-28T16:30:46.746149Z", "event": "insights_ready"}
+{"ts": "2025-08-28T16:30:46.746598Z", "event": "snow_draft_written"}
+{"ts": "2025-08-28T16:30:46.746854Z", "event": "validation_written"}
+{"ts": "2025-08-28T16:30:46.749879Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/batch/A003/A003_pack.zip"}
+{"ts": "2025-08-28T16:31:49.495215Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A003.json"}
+{"ts": "2025-08-28T16:31:49.495393Z", "event": "alarm_loaded", "id": "A003"}
+{"ts": "2025-08-28T16:31:49.496266Z", "event": "context_built", "incidents_count": 2, "has_config": true}
+{"ts": "2025-08-28T16:31:49.496606Z", "event": "probes_gathered", "offline": true}
+{"ts": "2025-08-28T16:31:49.496675Z", "event": "insights_ready"}
+{"ts": "2025-08-28T16:31:49.497895Z", "event": "snow_draft_written"}
+{"ts": "2025-08-28T16:31:49.498560Z", "event": "validation_written"}
+{"ts": "2025-08-28T16:31:49.504319Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/batch/A003/A003_pack.zip"}
+{"ts": "2025-08-28T16:50:00.525401Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A003.json"}
+{"ts": "2025-08-28T16:50:00.525531Z", "event": "alarm_loaded", "id": "A003"}
+{"ts": "2025-08-28T16:50:00.526466Z", "event": "context_built", "incidents_count": 2, "has_config": true}
+{"ts": "2025-08-28T16:50:00.526839Z", "event": "probes_gathered", "offline": true}
+{"ts": "2025-08-28T16:50:00.526918Z", "event": "insights_ready"}
+{"ts": "2025-08-28T16:50:00.527392Z", "event": "snow_draft_written"}
+{"ts": "2025-08-28T16:50:00.527680Z", "event": "validation_written"}
+{"ts": "2025-08-28T16:50:00.530339Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/batch/A003/A003_pack.zip"}
+{"ts": "2025-08-28T16:52:01.102714Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A003.json"}
+{"ts": "2025-08-28T16:52:01.102843Z", "event": "alarm_loaded", "id": "A003"}
+{"ts": "2025-08-28T16:52:01.103687Z", "event": "context_built", "incidents_count": 2, "has_config": true}
+{"ts": "2025-08-28T16:52:01.104064Z", "event": "probes_gathered", "offline": true}
+{"ts": "2025-08-28T16:52:01.104147Z", "event": "insights_ready"}
+{"ts": "2025-08-28T16:52:01.104550Z", "event": "snow_draft_written"}
+{"ts": "2025-08-28T16:52:01.104786Z", "event": "validation_written"}
+{"ts": "2025-08-28T16:52:01.107487Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/batch/A003/A003_pack.zip"}
+{"ts": "2025-08-28T16:52:35.611967Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A003.json"}
+{"ts": "2025-08-28T16:52:35.612108Z", "event": "alarm_loaded", "id": "A003"}
+{"ts": "2025-08-28T16:52:35.612946Z", "event": "context_built", "incidents_count": 2, "has_config": true}
+{"ts": "2025-08-28T16:52:35.613345Z", "event": "probes_gathered", "offline": true}
+{"ts": "2025-08-28T16:52:35.613427Z", "event": "insights_ready"}
+{"ts": "2025-08-28T16:52:35.613875Z", "event": "snow_draft_written"}
+{"ts": "2025-08-28T16:52:35.614179Z", "event": "validation_written"}
+{"ts": "2025-08-28T16:52:35.617040Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/batch/A003/A003_pack.zip"}
