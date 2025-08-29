@@ -1,6 +1,6 @@
-[![CI (alarm-triage)](https://github.com/parryio/network-automation/actions/workflows/ci-alarm-triage.yml/badge.svg?branch=main)](https://github.com/parryio/network-automation/actions/workflows/ci-alarm-triage.yml)
+[![CI](https://github.com/parryio/network-automation/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/parryio/network-automation/actions/workflows/ci.yml)
 
-**Download demo artifacts:** See the “demo-artifacts” attachment in the latest successful run under **Actions → demo**. It includes:
+**Download CI artifacts:** See the “ci-artifacts” attachment in the latest successful run under **Actions → CI**. It includes:
 - `reports/baseline_report.csv`
 - `reports/after_baseline_report.csv`
 - `diffs/` (unified diffs)
@@ -63,13 +63,7 @@ git push -u origin feat/ci-artifacts
 
 # Network Automation
 
-<<<<<<< HEAD
-## Scope & Purpose
-- **Scope:** Three small Python/Netmiko automations: config **backup**, **baseline audit**, and **safe change** (NTP + banner), with an **offline demo** (no hardware) that produces real artifacts (CSV, diffs, after-config).
-- **Purpose:** Show practical network automation that is **reproducible**, **safe** (dry-run + diffs), and **idempotent**—the essentials for change control.
-=======
-Practical network automation scripts (Python/Netmiko) for three real tasks + an offline alarm triage demo UI:
->>>>>>> 8cc0126 (UI overhaul)
+Practical network automation scripts (Python/Netmiko) for three real tasks plus an offline alarm triage demo UI.
 
 ## What’s included
 - `scripts/backup_configs.py` – backups (parallel)
@@ -77,11 +71,6 @@ Practical network automation scripts (Python/Netmiko) for three real tasks + an 
 - `scripts/push_change.py` – safe change with `--dry-run`, diffs, and **offline write-after**  
   - Offline fixers: `--disable-http`, `--fix-ssh`, `--timestamps`
 
-<<<<<<< HEAD
-## Offline demo (no hardware)
-```bash
-python -m venv .venv && source .venv/bin/activate   # Windows: .\.venv\Scripts\Activate.ps1
-=======
 ## Quickstart (UI)
 
 Exactly 3 commands (Python 3.11+):
@@ -126,13 +115,9 @@ Batch mode:
 make demo  # processes all demo alarms into outputs/batch
 ```
 
-## Legacy Quickstart (Windows PowerShell)
-
-```powershell
-# create venv and install deps
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
->>>>>>> 8cc0126 (UI overhaul)
+## Offline demo (no hardware)
+```bash
+python -m venv .venv && source .venv/bin/activate   # Windows: .\\.venv\\Scripts\\Activate.ps1
 pip install -r requirements.txt
 
 python -m scripts.backup_configs --offline-from demo/configs --out configs
