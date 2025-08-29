@@ -65,9 +65,13 @@ git push -u origin feat/ci-artifacts
 
 # Network Automation
 
+<<<<<<< HEAD
 ## Scope & Purpose
 - **Scope:** Three small Python/Netmiko automations: config **backup**, **baseline audit**, and **safe change** (NTP + banner), with an **offline demo** (no hardware) that produces real artifacts (CSV, diffs, after-config).
 - **Purpose:** Show practical network automation that is **reproducible**, **safe** (dry-run + diffs), and **idempotent**—the essentials for change control.
+=======
+Practical network automation scripts (Python/Netmiko) for three real tasks + an offline alarm triage demo UI:
+>>>>>>> 8cc0126 (UI overhaul)
 
 ## What’s included
 - `scripts/backup_configs.py` – backups (parallel)
@@ -75,9 +79,62 @@ git push -u origin feat/ci-artifacts
 - `scripts/push_change.py` – safe change with `--dry-run`, diffs, and **offline write-after**  
   - Offline fixers: `--disable-http`, `--fix-ssh`, `--timestamps`
 
+<<<<<<< HEAD
 ## Offline demo (no hardware)
 ```bash
 python -m venv .venv && source .venv/bin/activate   # Windows: .\.venv\Scripts\Activate.ps1
+=======
+## Quickstart (UI)
+
+Exactly 3 commands (Python 3.11+):
+
+```bash
+git clone https://github.com/parryio/network-automation.git
+cd network-automation && python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
+python -m streamlit run ui/app.py -- --alarms "demo/alarms/*.json" --out outputs
+```
+
+Then click Run triage. Artifacts land under `outputs/<ALARM_ID>/` with `validation.json`, `snow_draft.*`, `draft.md`, `context/` and a ZIP pack.
+
+> Artifacts are produced by the core triage pipeline; the UI never writes them.
+
+Demo shows deterministic synthetic metrics (seeded by Alarm ID) plus accessible PASS/FAIL chips; core pipeline owns artifacts and the UI is strictly read‑only.
+KPIs show counts with percentages (as metric deltas). Diagnostics (probes) are hidden by default—use the toggle to show.
+
+We target Streamlit ≥ 1.49 and use a tiny compat layer (`utils/streamlit_compat.py`) so no deprecated APIs appear in the codebase.
+Requires Streamlit ≥ 1.49.0; deprecated APIs removed and replaced with stable equivalents.
+Demo validation metrics (ping loss / RTT / traceroute hops) are deterministic synthetic values seeded by alarm ID for repeatable screenshots.
+
+### Before / After (Alarm → Draft)
+
+Raw alarm (excerpt):
+
+```json
+{ "id": "A001", "device": "edge-rtr01", "site": "site001", "severity": 3 }
+```
+
+Generated draft (excerpt):
+
+```markdown
+# ServiceNow Draft
+**Alarm**: A001
+**Device**: edge-rtr01
+**Site**: site001
+**Validation Status**: ok
+```
+
+Batch mode:
+```bash
+make demo  # processes all demo alarms into outputs/batch
+```
+
+## Legacy Quickstart (Windows PowerShell)
+
+```powershell
+# create venv and install deps
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+>>>>>>> 8cc0126 (UI overhaul)
 pip install -r requirements.txt
 
 python -m scripts.backup_configs --offline-from demo/configs --out configs

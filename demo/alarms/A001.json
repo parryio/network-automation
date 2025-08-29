@@ -3,5 +3,6 @@
   "device": "rtr-site001-core",
   "site": "site001",
   "severity": "major",
-  "description": "High interface errors on Gi0/0"
+  "description": "High interface errors on Gi0/0",
+  "service": "WAN"
 }

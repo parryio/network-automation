@@ -3,5 +3,6 @@
   "device": "rtr-site001-core",
   "site": "site001",
   "severity": "minor",
-  "description": "BGP neighbor flap count elevated"
+  "description": "BGP neighbor flap count elevated",
+  "service": "BGP"
 }

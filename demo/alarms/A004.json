@@ -3,5 +3,6 @@
   "device": "rtr-site001-core",
   "site": "site001",
   "severity": "critical",
-  "description": "Link down on uplink"
+  "description": "Link down on uplink",
+  "service": "WAN"
 }

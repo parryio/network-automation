@@ -1,0 +1,12 @@
+{
+  "alarm_id": "A001",
+  "offline": true,
+  "ping_loss": 0.0,
+  "rtt_ms": 39.6,
+  "traceroute_hops": [
+    "198.51.0.173",
+    "198.51.1.229"
+  ],
+  "traceroute_last_hop": "198.51.1.229",
+  "status": "ok"
+}

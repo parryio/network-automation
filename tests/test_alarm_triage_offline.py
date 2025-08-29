@@ -1,11 +1,11 @@
 from pathlib import Path
-from scripts.alarm_triage.triage import process_alarm
+from scripts.alarm_triage.triage import triage_one
 
 
 def test_single_alarm_offline(tmp_path: Path):
     out_dir = tmp_path / "A001"
-    res = process_alarm(Path("demo/alarms/A001.json"), out_dir, offline=True)
-    expected = {"validation.json", "snow_draft.json", "snow_draft.md", "audit.jsonl"}
+    res = triage_one(Path("demo/alarms/A001.json"), out_dir, offline=True, emit_draft=True)
+    expected = {"validation.json", "snow_draft.json", "snow_draft.md", "audit.jsonl", "draft.md"}
     files = {p.name for p in out_dir.iterdir() if p.is_file()}
     assert expected.issubset(files)
     # context directory

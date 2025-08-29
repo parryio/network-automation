@@ -296,9 +296,14 @@ ss = st.session_state
 ss.setdefault("rows", [])
 ss.setdefault("ran_once", False)
 ss.setdefault("last_scope", None)  # "batch" | "single" | None
+<<<<<<< HEAD
 ss.setdefault("show_diag", False)         # persisted toggle
 ss.setdefault("draft_to_show", None)
 ss.setdefault("show_draft_modal", False)
+=======
+ss.setdefault("show_draft_modal", False)
+ss.setdefault("draft_to_show", None)
+>>>>>>> 8cc0126 (UI overhaul)
 
 with st.sidebar:
     st.subheader("Controls")
@@ -322,6 +327,7 @@ with st.sidebar:
             if "*" not in pattern:
                 pattern = pattern.replace(".json", "*.json") if pattern.endswith(".json") else pattern + "/*.json"
             triage_batch(pattern, OUT_ROOT, offline=True, emit_draft=True, run_id=run_id)
+<<<<<<< HEAD
             glob_path = Path(pattern)
             alarm_paths = sorted(glob_path.parent.glob(glob_path.name))
             alarm_ids = [p.stem for p in alarm_paths if p.is_file()]
@@ -333,6 +339,10 @@ with st.sidebar:
                 alarm_path = next((p for p in alarm_paths if p.stem == aid), None) or Path("/dev/null")
                 built_rows.append(_build_row(aid, alarm_path, OUT_ROOT))
             ss["rows"] = built_rows
+=======
+            alarm_paths = sorted(Path().glob(pattern))
+            ss["rows"] = [_build_row(p.stem, p, OUT_ROOT) for p in alarm_paths if p.is_file()]
+>>>>>>> 8cc0126 (UI overhaul)
             ss["ran_once"] = True
             ss["last_scope"] = "batch"
         dt = time.perf_counter() - t0
@@ -365,8 +375,12 @@ with st.sidebar:
         ss["rows"] = []
         ss["ran_once"] = False
         ss["last_scope"] = None
+<<<<<<< HEAD
         ss["draft_to_show"] = None
         ss["show_draft_modal"] = False
+=======
+        st.success("Cleared artifacts.")
+>>>>>>> 8cc0126 (UI overhaul)
         st.rerun()
 
 # Rows will be built strictly from alarms glob (single source of truth)
@@ -377,6 +391,7 @@ alarm_data = redact(load_alarm(sel_path))
 with st.expander("Alarm JSON (for reproducibility)", expanded=False):
     st.json(alarm_data)
 
+<<<<<<< HEAD
 """Diagnostics toggle persisted and used to build aids list."""
 ss["show_diag"] = st.toggle("Show diagnostics (probes)", value=ss["show_diag"], key="tog_diag")
 
@@ -397,6 +412,12 @@ if ss.get("ran_once") and ss.get("last_scope") == "batch":
             alarm_path = next((p for p in alarm_paths if p.stem == aid), None) or Path("/dev/null")
             new_rows.append(_build_row(aid, alarm_path, OUT_ROOT))
         ss["rows"] = new_rows
+=======
+# Diagnostics toggle precedes row build
+show_diag = st.toggle("Show diagnostics (probes)", value=False)
+alarm_ids = [p.stem for p in ALARM_FILES]
+alarm_ids_with_diag = final_alarm_ids(ARGS.alarms, OUT_ROOT, include_diagnostics=show_diag)
+>>>>>>> 8cc0126 (UI overhaul)
 
 def _any_artifacts_exist(out_root: Path) -> bool:
     try:
@@ -407,11 +428,14 @@ def _any_artifacts_exist(out_root: Path) -> bool:
 rows: List[Dict[str, Any]] = ss.get("rows", [])
 data_ready = ss.get("ran_once") and len(rows) > 0 and OUT_ROOT.exists() and _any_artifacts_exist(OUT_ROOT)
 
+<<<<<<< HEAD
 # Gate rendering on data readiness
 if not data_ready:
     st.warning("Output directory not found yet. Click **Run triage** to generate artifacts.")
     st.stop()
 
+=======
+>>>>>>> 8cc0126 (UI overhaul)
 def _show_draft_modal(aid: str):
     """Render modal with draft preview and downloads."""
     out_dir = OUT_ROOT / aid
@@ -463,10 +487,18 @@ def _show_draft_modal(aid: str):
         else:
             st.button("Download pack.zip", disabled=True)
 
+<<<<<<< HEAD
 #! Compute duration across aids
 total_secs = 0.0
 for dur_file in OUT_ROOT.glob("*/duration_s.txt"):
     if dur_file.parent.name in aids:
+=======
+# Compute total seconds across displayed alarms (only those in alarm_ids_with_diag)
+alarm_ids_for_duration = {r["Alarm"] for r in rows} if data_ready else set()
+total_secs = 0.0
+for dur_file in OUT_ROOT.glob("*/duration_s.txt"):
+    if dur_file.parent.name in alarm_ids_for_duration:
+>>>>>>> 8cc0126 (UI overhaul)
         try:
             total_secs += float(dur_file.read_text().strip())
         except Exception:
@@ -474,6 +506,7 @@ for dur_file in OUT_ROOT.glob("*/duration_s.txt"):
 
 # KPI metrics (counts as value, percent as delta)
 n = len(rows)
+<<<<<<< HEAD
 p = sum(1 for r in rows if r.get("_pass"))
 f = n - p
 k1, k2, k3 = st.columns(3)
@@ -545,6 +578,78 @@ except Exception:  # pragma: no cover - fallback rendering
                 ss["show_draft_modal"] = False
                 ss["draft_to_show"] = None
                 st.rerun()
+=======
+if data_ready:
+    p = sum(1 for r in rows if r.get("_pass"))
+    f = n - p
+    k1, k2, k3 = st.columns(3)
+    k1.metric("PASS", f"{p}/{n}", f"{int(100 * p / max(n,1))}%")
+    k2.metric("FAIL", f"{f}/{n}", f"{int(100 * f / max(n,1))}%")
+    k3.metric("Total Duration (s)", f"{total_secs:.2f}")
+
+if not data_ready:
+    st.warning("Output directory not found yet. Click **Run triage** to generate artifacts.")
+else:
+    try:
+        import numpy as np  # type: ignore
+        import pandas as pd  # type: ignore
+        df = pd.DataFrame(rows)
+        # Coerce numeric columns to float (Arrow-friendly) while preserving NaN for missing
+        if "RTT (ms)" in df.columns:
+            df["RTT (ms)"] = pd.to_numeric(df["RTT (ms)"], errors="coerce")
+        # Sorting per spec (transient columns first)
+        if not df.empty:
+            df = df.sort_values(
+                by=["_pass", "_sev_rank", "Site", "Node"],
+                ascending=[True, False, True, True],
+                kind="mergesort",
+            )
+        # Drop transient columns
+        for col in ["_pass", "_sev_rank"]:
+            if col in df.columns:
+                df = df.drop(columns=[col])
+        ordered_cols = [
+            "Status", "Severity", "Site", "Service", "Alarm", "Node",
+            "Symptom", "Ping loss", "RTT (ms)", "Traceroute last hop", "Artifacts"
+        ]
+        df = df[[c for c in ordered_cols if c in df.columns]]
+        styler = (
+            df.style
+            .format({"RTT (ms)": "{:.1f}"})
+            .format(na_rep="—")
+        )
+        st.dataframe(styler, width="stretch", hide_index=True)
+
+        # Drafts section (buttons only)
+        draft_ids = sorted({r["Alarm"] for r in rows if (OUT_ROOT / r["Alarm"] / "draft.md").exists()})
+        if draft_ids:
+            st.subheader("Drafts")
+            cols = st.columns(3)
+            for i, aid in enumerate(draft_ids):
+                if cols[i % 3].button(f"View draft: {aid}", key=f"btn_draft_{aid}"):
+                    ss["draft_to_show"] = aid
+                    ss["show_draft_modal"] = True
+
+        if ss.get("show_draft_modal"):
+            aid = ss.get("draft_to_show")
+            if aid:
+                a_dir = OUT_ROOT / aid
+                draft_path = a_dir / "draft.md"
+                md = draft_path.read_text(encoding="utf-8") if draft_path.exists() else "# Draft missing"
+                with st.modal(f"Draft — {aid}"):
+                    st.markdown(md)
+                    c1, c2 = st.columns(2)
+                    pack_path = a_dir / f"{aid}_pack.zip"
+                    if pack_path.exists():
+                        c1.download_button("Download pack.zip", pack_path.read_bytes(), file_name=f"{aid}_pack.zip")
+                    c2.download_button("Download draft.md", md, file_name=f"{aid}_draft.md")
+                    if st.button("Close"):
+                        ss["show_draft_modal"] = False
+                        ss["draft_to_show"] = None
+    except Exception:  # pragma: no cover - fallback rendering
+        st.table([{k: v for k, v in r.items() if not k.startswith("_") } for r in rows])
+    # Artifacts zip download (only when data_ready)
+>>>>>>> 8cc0126 (UI overhaul)
     def _dir_stats(p: Path) -> tuple[int, int]:
         files, bytes_ = 0, 0
         if not p.exists():

@@ -3,5 +3,6 @@
   "device": "rtr-site001-core",
   "site": "site001",
   "severity": "warning",
-  "description": "CPU utilization spike"
+  "description": "CPU utilization spike",
+  "service": "Infra"
 }
