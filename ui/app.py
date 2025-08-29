@@ -1,48 +1,54 @@
 from __future__ import annotations
 
-"""Polished public demo Streamlit UI for alarm triage.
+"""Demo-ready Streamlit UI for alarm triage (stable, single-pass interactions).
 
-Features:
- - Argument driven (alarms glob, output root)
- - Run triage with spinner + duration timing
- - KPI badges (PASS / FAIL ratio)
- - Results table with human labels
- - Download full artifacts zip
- - JSON structured logs via logging_setup
- - Sanitized output path (must reside within repo root)
- - Redaction of obvious sensitive tokens when displaying snippets
+Key behaviors (as per one-shot hardening prompt):
+ - Deterministic path normalization from repo root
+ - No st.rerun() loops; buttons execute and table refreshes immediately
+ - Diagnostics (probes) toggle derives ids strictly from alarms glob
+ - Arrow / PyArrow friendly DataFrame coercions + pretty display
+ - Per-row "View draft" modal opens in same run (no intermediate rerun)
+ - Output directory constrained under repo root
 """
 
 import argparse
+import glob
 import io
 import json
 import os
-import shutil
 import sys
 import time
 import zipfile
 import uuid
 import logging
+import hashlib
 from datetime import datetime, timezone
-from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Dict, Any, Optional
+import numpy as np  # numeric sanitation
+import pandas as pd  # dataframe operations
 
 from packaging.version import Version
 import streamlit as st
+
+HAS_MODAL = hasattr(st, "modal")
 
 MIN = "1.49.0"
 if Version(st.__version__) < Version(MIN):  # pragma: no cover - defensive
     st.error(f"Streamlit ≥ {MIN} required; found {st.__version__}.")
     st.stop()
 
-def rerun():  # simple wrapper now that we pin version
-    st.rerun()
+# ---------------------------------------------------------------------------
+# Path normalization helpers (always relative to repo root)
+# ---------------------------------------------------------------------------
+from pathlib import Path as _PathAlias  # noqa: E402
+ROOT = Path(__file__).resolve().parents[1]
 
-def dataframe_kwargs() -> dict:
-    return {"width": "stretch"}
+def to_root(p: str | Path) -> Path:
+    q = Path(p)
+    return q if q.is_absolute() else (ROOT / q)
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = ROOT
 
 # Make app robust when run from fresh clone without PYTHONPATH tweaks
 if str(REPO_ROOT) not in sys.path:
@@ -75,11 +81,35 @@ except Exception:  # pragma: no cover
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# DataFrame numeric sanitation helpers
+# ---------------------------------------------------------------------------
+def as_int64_nullable(series: pd.Series) -> pd.Series:
+    """Coerce heterogeneous numeric-ish series to pandas nullable Int64.
+
+    Non (int|float) or non-finite values become <NA>.
+    Values are rounded (banker's rounding per pandas .round) before cast.
+    """
+    def _keep_num(v):
+        return v if isinstance(v, (int, float, np.integer, np.floating)) and np.isfinite(v) else None
+    s = series.map(_keep_num)
+    s = pd.to_numeric(s, errors="coerce")  # float64 w/ NaN
+    return s.round().astype("Int64")
+
 # Meta directories to always ignore (single source of truth is alarms glob)
 EXCLUDE_META = {"batch", "ui", ".cache", ".DS_Store"}
 
+def _normalize_glob(g: str) -> str:
+    """Return absolute glob string rooted at REPO_ROOT if relative."""
+    p = Path(g)
+    if not p.is_absolute():
+        return str((REPO_ROOT / g).resolve())
+    return str(p)
+
+
 def resolve_alarm_paths(glob_pattern: str) -> List[Path]:
-    """Return sorted list of alarm JSON paths from glob that contain an id field."""
+    """Return sorted list of alarm JSON paths from glob (relative paths resolved to repo root)."""
+    glob_pattern = _normalize_glob(glob_pattern)
     parent = Path(glob_pattern).parent
     name = Path(glob_pattern).name
     paths = sorted(parent.glob(name))
@@ -107,10 +137,19 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--alarms", default="demo/alarms/*.json", help="Glob of alarm JSON files")
     parser.add_argument("--out", default="outputs", help="Output directory root for triage runs")
-    return parser.parse_args()
-
+    ns, _ = parser.parse_known_args()
+    return ns
 
 ARGS = parse_args()
+
+# Normalize & sanitize paths immediately
+ALARMS_GLOB_RAW = ARGS.alarms
+OUT_ROOT = to_root(ARGS.out).resolve()
+ALARMS_GLOB = str(to_root(ALARMS_GLOB_RAW))
+if ROOT not in OUT_ROOT.parents and OUT_ROOT != ROOT:  # safety guard
+    st.error("Output must be inside repo root")
+    st.stop()
+OUT_ROOT.mkdir(parents=True, exist_ok=True)
 
 
 # ----------------------------------------------------------------------------------
@@ -119,7 +158,7 @@ ARGS = parse_args()
 SENSITIVE_KEYS = {"password", "secret", "community", "token"}
 
 
-def sanitize_output_dir(out_root: Path) -> Path:
+def sanitize_output_dir(out_root: Path) -> Path:  # retained for back-compat use elsewhere
     out_root = out_root.resolve()
     if REPO_ROOT not in out_root.parents and out_root != REPO_ROOT:
         raise ValueError("--out must be inside repository root")
@@ -143,16 +182,20 @@ def redact(obj: Any) -> Any:
 
 
 def iter_alarm_files(pattern: str) -> List[Path]:
-    paths = [Path(p) for p in sorted(Path().glob(pattern))]
-    # Filter out helper json that isn't an alarm (no id field)
+    """Return alarm JSON Paths strictly from glob (no meta injection)."""
+    abs_glob = str(to_root(pattern))
+    paths = sorted(glob.glob(abs_glob))
     good: List[Path] = []
     for p in paths:
+        P = Path(p)
+        if not P.is_file():
+            continue
         try:
-            data = json.loads(p.read_text(encoding="utf-8"))
+            data = json.loads(P.read_text(encoding="utf-8"))
         except Exception:
             continue
         if isinstance(data, dict) and data.get("id"):
-            good.append(p)
+            good.append(P)
     return good
 
 
@@ -233,6 +276,8 @@ def _build_row(aid: str, alarm_path: Path, out_root: Path) -> Dict[str, Any]:
     sev = severity
     node = alarm.get("source") or alarm.get("device") or "—"
     rtt = v.get("rtt_ms")
+    if not isinstance(rtt, (int, float)):
+        rtt = None
     # Build row (numeric fields use None for missing to remain Arrow friendly)
     row = {
         "Status": "✅ PASS" if status_flag else "❌ FAIL",
@@ -280,108 +325,83 @@ with st.expander("What this demo shows", expanded=False):
     )
 st.caption("Offline-deterministic triage: validate reachability, assemble context, emit ServiceNow draft.")
 
-try:
-    OUT_ROOT = sanitize_output_dir(REPO_ROOT / ARGS.out)
-except Exception as exc:
-    st.error(str(exc))
-    st.stop()
-
-ALARM_FILES = resolve_alarm_paths(ARGS.alarms)
+ALARM_FILES = iter_alarm_files(ALARMS_GLOB)
 if not ALARM_FILES:
-    st.warning("No alarms matched the glob. Adjust the pattern and try again.")
-    st.stop()
-if "selected_alarm" not in st.session_state:
-    st.session_state.selected_alarm = str(ALARM_FILES[0])
+    st.warning("No alarms matched the glob. Tip: if you launched from `ui/`, use `../demo/alarms/*.json` or pass absolute paths.")
+
 ss = st.session_state
+if "selected_alarm" not in ss and ALARM_FILES:
+    ss.selected_alarm = str(ALARM_FILES[0])
 ss.setdefault("rows", [])
-ss.setdefault("ran_once", False)
-ss.setdefault("last_scope", None)  # "batch" | "single" | None
-<<<<<<< HEAD
-ss.setdefault("show_diag", False)         # persisted toggle
-ss.setdefault("draft_to_show", None)
-ss.setdefault("show_draft_modal", False)
-=======
-ss.setdefault("show_draft_modal", False)
-ss.setdefault("draft_to_show", None)
->>>>>>> 8cc0126 (UI overhaul)
+ss.setdefault("last_run_ts", None)
+
+def collect_rows(alarm_paths: List[Path], include_diag: bool) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    for p in alarm_paths:
+        aid = p.stem
+        rows.append(_build_row(aid, p, OUT_ROOT))
+    if include_diag:
+        diag = ROOT / "demo" / "alarms" / "probes_offline.json"
+        if diag.exists():
+            rows.append(_build_row("probes_offline", diag, OUT_ROOT))
+    return rows
 
 with st.sidebar:
     st.subheader("Controls")
     st.text(f"CLI version: {get_cli_version()}")
-    choice = st.selectbox(
-        "Alarm",
-        options=[str(p) for p in ALARM_FILES],
-        index=[str(p) for p in ALARM_FILES].index(st.session_state.selected_alarm),
-    )
-    if choice != st.session_state.selected_alarm:
-        st.session_state.selected_alarm = choice
+    if ALARM_FILES:
+        prev = ss.get("selected_alarm_path")
+        try:
+            idx = ALARM_FILES.index(Path(prev)) if prev else 0
+        except Exception:
+            idx = 0
+        selected_alarm_path: Path = st.selectbox(
+            "Alarm",
+            options=ALARM_FILES,
+            index=idx,
+            format_func=lambda p: p.stem,
+            key="selected_alarm_path",
+        )
+        ss.selected_alarm = str(selected_alarm_path)
+        try:
+            rel = selected_alarm_path.resolve().relative_to(ROOT)
+        except Exception:
+            rel = selected_alarm_path
+        st.caption(f"File: {rel}")
+    else:
+        st.selectbox("Alarm", options=["(none)"] , index=0, disabled=True)
 
-    # Run triage (batch)
-    if st.button("Run triage (all demo alarms)", type="primary"):
+    show_diag = st.toggle("Show diagnostics (probes)", value=bool(ss.get("show_diag", False)))
+    ss["show_diag"] = show_diag
+
+    # Batch triage
+    if st.button("Run triage (all demo alarms)", type="primary", disabled=not ALARM_FILES):
         run_id = str(uuid.uuid4())
-        ss["run_id"] = run_id
         t0 = time.perf_counter()
-        logger.info("ui_run_start", extra={"run_id": run_id, "mode": "batch"})
-        with st.spinner("Running triage (batch)..."):
-            pattern = str(Path(ARGS.alarms))
-            if "*" not in pattern:
-                pattern = pattern.replace(".json", "*.json") if pattern.endswith(".json") else pattern + "/*.json"
-            triage_batch(pattern, OUT_ROOT, offline=True, emit_draft=True, run_id=run_id)
-<<<<<<< HEAD
-            glob_path = Path(pattern)
-            alarm_paths = sorted(glob_path.parent.glob(glob_path.name))
-            alarm_ids = [p.stem for p in alarm_paths if p.is_file()]
-            aids = list(alarm_ids)
-            if ss.get("show_diag") and (OUT_ROOT / "probes_offline" / "validation.json").exists():
-                aids.append("probes_offline")
-            built_rows: List[Dict[str, Any]] = []
-            for aid in aids:
-                alarm_path = next((p for p in alarm_paths if p.stem == aid), None) or Path("/dev/null")
-                built_rows.append(_build_row(aid, alarm_path, OUT_ROOT))
-            ss["rows"] = built_rows
-=======
-            alarm_paths = sorted(Path().glob(pattern))
-            ss["rows"] = [_build_row(p.stem, p, OUT_ROOT) for p in alarm_paths if p.is_file()]
->>>>>>> 8cc0126 (UI overhaul)
-            ss["ran_once"] = True
-            ss["last_scope"] = "batch"
-        dt = time.perf_counter() - t0
-        logger.info("ui_run_complete", extra={"run_id": run_id, "mode": "batch", "seconds": round(dt,3)})
-        st.success("Done.")
-        st.rerun()
+        with st.spinner("Running triage (all alarms)..."):
+            triage_batch(ALARMS_GLOB, OUT_ROOT, offline=True, emit_draft=True, run_id=run_id)
+        alarm_paths = [Path(p) for p in sorted(glob.glob(ALARMS_GLOB)) if Path(p).is_file()]
+        ss["rows"] = collect_rows(alarm_paths, include_diag=show_diag)
+        ss["last_run_ts"] = time.time()
+        st.toast("Triage complete", icon="✅")
 
-    # Run triage (single)
+    # Single alarm triage
     if st.button("Run triage (selected alarm)", type="secondary", disabled=not ss.get("selected_alarm")):
+        sel = Path(ss.selected_alarm)
         run_id = str(uuid.uuid4())
-        ss["run_id"] = run_id
-        t0 = time.perf_counter()
-        logger.info("ui_run_start", extra={"run_id": run_id, "mode": "single"})
-        with st.spinner("Running triage (selected alarm)..."):
-            sel = Path(ss["selected_alarm"])
-            aid = sel.stem
-            triage_one(sel, OUT_ROOT / aid, offline=True, emit_draft=True, run_id=run_id)
-            ss["rows"] = [_build_row(aid, sel, OUT_ROOT)]
-            ss["ran_once"] = True
-            ss["last_scope"] = "single"
-        dt = time.perf_counter() - t0
-        logger.info("ui_run_complete", extra={"run_id": run_id, "mode": "single", "seconds": round(dt,3)})
-        st.success("Done.")
-        st.rerun()
+        with st.spinner(f"Running triage ({sel.stem})..."):
+            triage_one(sel, OUT_ROOT / sel.stem, offline=True, emit_draft=True, run_id=run_id)
+        ss["rows"] = collect_rows([sel], include_diag=False)
+        ss["last_run_ts"] = time.time()
+        st.toast("Triage complete", icon="✅")
 
     st.markdown("---")
     if st.button("Clear artifacts"):
         import shutil as _shutil
         _shutil.rmtree(OUT_ROOT, ignore_errors=True)
         ss["rows"] = []
-        ss["ran_once"] = False
-        ss["last_scope"] = None
-<<<<<<< HEAD
-        ss["draft_to_show"] = None
-        ss["show_draft_modal"] = False
-=======
-        st.success("Cleared artifacts.")
->>>>>>> 8cc0126 (UI overhaul)
-        st.rerun()
+        ss["last_run_ts"] = time.time()
+        st.toast("Cleared", icon="🧹")
 
 # Rows will be built strictly from alarms glob (single source of truth)
 
@@ -391,33 +411,7 @@ alarm_data = redact(load_alarm(sel_path))
 with st.expander("Alarm JSON (for reproducibility)", expanded=False):
     st.json(alarm_data)
 
-<<<<<<< HEAD
-"""Diagnostics toggle persisted and used to build aids list."""
-ss["show_diag"] = st.toggle("Show diagnostics (probes)", value=ss["show_diag"], key="tog_diag")
-
-# Single source of truth: build alarm IDs from glob only; optionally append diagnostics
-glob_path = Path(ARGS.alarms)
-alarm_paths = sorted(glob_path.parent.glob(glob_path.name))
-alarm_ids = [p.stem for p in alarm_paths if p.is_file()]
-aids = list(alarm_ids)
-if ss.get("show_diag") and (OUT_ROOT / "probes_offline" / "validation.json").exists():
-    aids.append("probes_offline")
-
-# Live adjust rows (post-batch run) when diagnostics toggle changes
-if ss.get("ran_once") and ss.get("last_scope") == "batch":
-    current_ids = [r.get("Alarm") for r in ss.get("rows", [])]
-    if sorted(current_ids) != sorted(aids):
-        new_rows: List[Dict[str, Any]] = []
-        for aid in aids:
-            alarm_path = next((p for p in alarm_paths if p.stem == aid), None) or Path("/dev/null")
-            new_rows.append(_build_row(aid, alarm_path, OUT_ROOT))
-        ss["rows"] = new_rows
-=======
-# Diagnostics toggle precedes row build
-show_diag = st.toggle("Show diagnostics (probes)", value=False)
-alarm_ids = [p.stem for p in ALARM_FILES]
-alarm_ids_with_diag = final_alarm_ids(ARGS.alarms, OUT_ROOT, include_diagnostics=show_diag)
->>>>>>> 8cc0126 (UI overhaul)
+show_diag = bool(ss.get("show_diag"))
 
 def _any_artifacts_exist(out_root: Path) -> bool:
     try:
@@ -426,16 +420,9 @@ def _any_artifacts_exist(out_root: Path) -> bool:
         return False
 
 rows: List[Dict[str, Any]] = ss.get("rows", [])
-data_ready = ss.get("ran_once") and len(rows) > 0 and OUT_ROOT.exists() and _any_artifacts_exist(OUT_ROOT)
+data_ready = len(rows) > 0 and OUT_ROOT.exists() and _any_artifacts_exist(OUT_ROOT)
 
-<<<<<<< HEAD
-# Gate rendering on data readiness
-if not data_ready:
-    st.warning("Output directory not found yet. Click **Run triage** to generate artifacts.")
-    st.stop()
-
-=======
->>>>>>> 8cc0126 (UI overhaul)
+# Gate rendering KPI/table only when data ready (but keep page interactive)
 def _show_draft_modal(aid: str):
     """Render modal with draft preview and downloads."""
     out_dir = OUT_ROOT / aid
@@ -456,7 +443,12 @@ def _show_draft_modal(aid: str):
             alarm = {}
     node = alarm.get("source") or alarm.get("device") or "—"
     severity = alarm.get("severity", "—")
-    with st.modal(f"Alarm {aid} draft"):
+    title = f"Alarm {aid} draft"
+    if HAS_MODAL:
+        ctx = st.modal(title)
+    else:
+        ctx = st.expander(title, expanded=True)
+    with ctx:
         st.markdown(f"**Alarm {aid} — {node} — {severity}**")
         # timestamp
         ts = None
@@ -487,194 +479,113 @@ def _show_draft_modal(aid: str):
         else:
             st.button("Download pack.zip", disabled=True)
 
-<<<<<<< HEAD
-#! Compute duration across aids
-total_secs = 0.0
-for dur_file in OUT_ROOT.glob("*/duration_s.txt"):
-    if dur_file.parent.name in aids:
-=======
-# Compute total seconds across displayed alarms (only those in alarm_ids_with_diag)
 alarm_ids_for_duration = {r["Alarm"] for r in rows} if data_ready else set()
 total_secs = 0.0
 for dur_file in OUT_ROOT.glob("*/duration_s.txt"):
     if dur_file.parent.name in alarm_ids_for_duration:
->>>>>>> 8cc0126 (UI overhaul)
         try:
             total_secs += float(dur_file.read_text().strip())
         except Exception:
             pass
 
-# KPI metrics (counts as value, percent as delta)
-n = len(rows)
-<<<<<<< HEAD
-p = sum(1 for r in rows if r.get("_pass"))
-f = n - p
-k1, k2, k3 = st.columns(3)
-k1.metric("PASS", f"{p}/{n}", f"{int(100 * p / max(n,1))}%")
-k2.metric("FAIL", f"{f}/{n}", f"{int(100 * f / max(n,1))}%")
-k3.metric("Total Duration (s)", f"{total_secs:.2f}")
-
-# Single results table (only one st.dataframe)
-try:
+if data_ready:
+    n = len(rows)
+    p_ct = sum(r.get("_pass", False) for r in rows)
+    f_ct = n - p_ct
+    k1, k2 = st.columns(2)
+    k1.metric("PASS", f"{p_ct}/{n}", f"{int(100 * p_ct / max(n,1))}%")
+    k2.metric("FAIL", f"{f_ct}/{n}", f"{int(100 * f_ct / max(n,1))}%")
     import pandas as pd  # type: ignore
     df = pd.DataFrame(rows)
+    # Normalize Alarm (ID only) and Artifacts (repo-relative path)
+    from pathlib import Path as _PathNorm
+    def _alarm_label(val: str) -> str:
+        p = _PathNorm(str(val))
+        return p.stem if p.suffix == ".json" else p.name
+    def _short_path(p: str) -> str:
+        try:
+            return str(_PathNorm(p).resolve().relative_to(ROOT))
+        except Exception:
+            return str(p)
+    if "Alarm" in df.columns:
+        df["Alarm"] = df["Alarm"].apply(_alarm_label)
+    if "Artifacts" in df.columns:
+        df["Artifacts"] = df["Artifacts"].apply(_short_path)
+    if "Alarm" not in df.columns and "Artifacts" in df.columns:
+        df["Alarm"] = df["Artifacts"].apply(lambda p: _PathNorm(str(p)).name)
+    # Type coercions (Arrow safe)
     if "RTT (ms)" in df.columns:
-        df["RTT (ms)"] = pd.to_numeric(df["RTT (ms)"], errors="coerce")
+        # Robust coercion (sanitizes non-numeric to <NA>)
+        df["RTT (ms)"] = as_int64_nullable(df["RTT (ms)"])
+    for c in ["Severity", "Site", "Service", "Node", "Status"]:
+        if c in df.columns:
+            df[c] = df[c].astype("string")
+    # Sort (fail first, severity rank desc)
     if not df.empty:
-        df = df.sort_values(
-            by=["_pass", "_sev_rank", "Site", "Node"],
-            ascending=[True, False, True, True],
-            kind="mergesort",
-        )
-    for col in ["_pass", "_sev_rank"]:
-        if col in df.columns:
-            df = df.drop(columns=[col])
-    ordered_cols = [
-        "Status", "Severity", "Site", "Service", "Alarm", "Node",
-        "Symptom", "Ping loss", "RTT (ms)", "Traceroute last hop", "Artifacts"
-    ]
-    df = df[[c for c in ordered_cols if c in df.columns]]
-    styler = df.style.format({"RTT (ms)": "{:.1f}"}).format(na_rep="—")
-    st.dataframe(styler, width="stretch", hide_index=True)
-
-    # Drafts section
-    draft_ids = sorted({r["Alarm"] for r in rows if (OUT_ROOT / str(r["Alarm"]) / "draft.md").exists()})
-    if draft_ids:
-        st.subheader("Drafts")
-        cols = st.columns(3)
-        for i, aid in enumerate(draft_ids):
-            if cols[i % 3].button(f"View draft: {aid}", key=f"btn_draft_{aid}"):
-                ss["draft_to_show"] = aid
-                ss["show_draft_modal"] = True
-                st.rerun()
-
-    if ss.get("show_draft_modal") and ss.get("draft_to_show"):
-        aid = ss["draft_to_show"]
-        a_dir = OUT_ROOT / aid
-        md_path = a_dir / "draft.md"
-        md = md_path.read_text(encoding="utf-8") if md_path.exists() else "# Draft missing"
-        with st.modal(f"Draft — {aid}"):
-            st.markdown(md)
-            c1, c2 = st.columns(2)
-            pack_path = a_dir / f"{aid}_pack.zip"
-            if pack_path.exists():
-                c1.download_button("Download pack.zip", pack_path.read_bytes(), file_name=f"{aid}_pack.zip")
-            c2.download_button("Download draft.md", md, file_name=f"{aid}_draft.md")
-            if st.button("Close"):
-                ss["show_draft_modal"] = False
-                ss["draft_to_show"] = None
-                st.rerun()
-except Exception:  # pragma: no cover - fallback rendering
-    st.table([{k: v for k, v in r.items() if not k.startswith("_")} for r in rows])
-
-    if ss.get("show_draft_modal") and ss.get("draft_to_show"):
-        aid = ss["draft_to_show"]
-        a_dir = OUT_ROOT / aid
-        draft_path = a_dir / "draft.md"
-        md = draft_path.read_text(encoding="utf-8") if draft_path.exists() else "# Draft missing"
-        with st.modal(f"Draft — {aid}"):
-            st.markdown(md)
-            if st.button("Close"):
-                ss["show_draft_modal"] = False
-                ss["draft_to_show"] = None
-                st.rerun()
-=======
-if data_ready:
-    p = sum(1 for r in rows if r.get("_pass"))
-    f = n - p
-    k1, k2, k3 = st.columns(3)
-    k1.metric("PASS", f"{p}/{n}", f"{int(100 * p / max(n,1))}%")
-    k2.metric("FAIL", f"{f}/{n}", f"{int(100 * f / max(n,1))}%")
-    k3.metric("Total Duration (s)", f"{total_secs:.2f}")
-
-if not data_ready:
-    st.warning("Output directory not found yet. Click **Run triage** to generate artifacts.")
-else:
+        df = df.sort_values(by=["_pass", "_sev_rank", "Site", "Node"], ascending=[True, False, True, True], kind="mergesort")
+    # Drop transient cols for display
+    display_df = df.drop(columns=[c for c in ["_pass", "_sev_rank"] if c in df.columns])
+    # Column config for prettier numeric display
     try:
-        import numpy as np  # type: ignore
-        import pandas as pd  # type: ignore
-        df = pd.DataFrame(rows)
-        # Coerce numeric columns to float (Arrow-friendly) while preserving NaN for missing
-        if "RTT (ms)" in df.columns:
-            df["RTT (ms)"] = pd.to_numeric(df["RTT (ms)"], errors="coerce")
-        # Sorting per spec (transient columns first)
-        if not df.empty:
-            df = df.sort_values(
-                by=["_pass", "_sev_rank", "Site", "Node"],
-                ascending=[True, False, True, True],
-                kind="mergesort",
+        from streamlit import column_config as colcfg  # lazy import for backward compat
+        table_cfg = {"RTT (ms)": colcfg.NumberColumn("RTT (ms)", format="%d")}
+        st.dataframe(display_df, width="stretch", column_config=table_cfg, hide_index=True)
+    except Exception:  # fallback if older Streamlit
+        st.dataframe(display_df, width="stretch")
+
+    # Per-row draft buttons (hashed keys + modal fallback)
+    def _row_key(row) -> str:
+        base = f"{row.get('Alarm')}|{row.get('Artifacts')}|{row.get('Node')}"
+        return hashlib.sha1(base.encode()).hexdigest()[:10]
+
+    def _render_draft(row: dict, k: str):
+        from pathlib import Path as _P
+        aid = str(row.get("Alarm"))
+        pack_dir = _P(str(row.get("Artifacts", "")))
+        if not pack_dir.is_absolute():  # resolve relative to ROOT
+            pack_dir = ROOT / pack_dir
+        # Prefer draft.md, fallback to snow_draft.md
+        md_file = pack_dir / "draft.md"
+        if not md_file.exists():
+            alt = pack_dir / "snow_draft.md"
+            if alt.exists():
+                md_file = alt
+        if md_file.exists():
+            try:
+                st.markdown(md_file.read_text(encoding="utf-8"))
+            except Exception:
+                st.info("Draft could not be read.")
+        else:
+            st.info("No draft available.")
+        # Pack zip
+        zip_file = None
+        for cand in pack_dir.glob("*_pack.zip"):
+            zip_file = cand
+            break
+        if zip_file and zip_file.exists():
+            st.download_button(
+                "Download artifacts.zip",
+                data=zip_file.read_bytes(),
+                file_name=zip_file.name,
+                key=f"dl_{k}",
             )
-        # Drop transient columns
-        for col in ["_pass", "_sev_rank"]:
-            if col in df.columns:
-                df = df.drop(columns=[col])
-        ordered_cols = [
-            "Status", "Severity", "Site", "Service", "Alarm", "Node",
-            "Symptom", "Ping loss", "RTT (ms)", "Traceroute last hop", "Artifacts"
-        ]
-        df = df[[c for c in ordered_cols if c in df.columns]]
-        styler = (
-            df.style
-            .format({"RTT (ms)": "{:.1f}"})
-            .format(na_rep="—")
-        )
-        st.dataframe(styler, width="stretch", hide_index=True)
 
-        # Drafts section (buttons only)
-        draft_ids = sorted({r["Alarm"] for r in rows if (OUT_ROOT / r["Alarm"] / "draft.md").exists()})
-        if draft_ids:
-            st.subheader("Drafts")
-            cols = st.columns(3)
-            for i, aid in enumerate(draft_ids):
-                if cols[i % 3].button(f"View draft: {aid}", key=f"btn_draft_{aid}"):
-                    ss["draft_to_show"] = aid
-                    ss["show_draft_modal"] = True
-
-        if ss.get("show_draft_modal"):
-            aid = ss.get("draft_to_show")
-            if aid:
-                a_dir = OUT_ROOT / aid
-                draft_path = a_dir / "draft.md"
-                md = draft_path.read_text(encoding="utf-8") if draft_path.exists() else "# Draft missing"
-                with st.modal(f"Draft — {aid}"):
-                    st.markdown(md)
-                    c1, c2 = st.columns(2)
-                    pack_path = a_dir / f"{aid}_pack.zip"
-                    if pack_path.exists():
-                        c1.download_button("Download pack.zip", pack_path.read_bytes(), file_name=f"{aid}_pack.zip")
-                    c2.download_button("Download draft.md", md, file_name=f"{aid}_draft.md")
-                    if st.button("Close"):
-                        ss["show_draft_modal"] = False
-                        ss["draft_to_show"] = None
-    except Exception:  # pragma: no cover - fallback rendering
-        st.table([{k: v for k, v in r.items() if not k.startswith("_") } for r in rows])
-    # Artifacts zip download (only when data_ready)
->>>>>>> 8cc0126 (UI overhaul)
-    def _dir_stats(p: Path) -> tuple[int, int]:
-        files, bytes_ = 0, 0
-        if not p.exists():
-            return files, bytes_
-        for f in p.rglob("*"):
-            if f.is_file():
-                files += 1
-                try:
-                    bytes_ += f.stat().st_size
-                except Exception:
-                    pass
-        return files, bytes_
-
-    def _fmt_size(n: int) -> str:
-        x = float(n)
-        for u in ["B","KB","MB","GB","TB"]:
-            if x < 1024:
-                return f"{x:.1f} {u}"
-            x /= 1024
-        return f"{x:.1f} PB"
-
-    if OUT_ROOT.exists() and any(p.is_dir() for p in OUT_ROOT.iterdir()):
-        zip_bytes = build_artifacts_zip(OUT_ROOT)
-        st.download_button("Download artifacts.zip", data=zip_bytes, file_name="artifacts.zip")
-        f_ct, b_ct = _dir_stats(OUT_ROOT)
-        st.caption(f"Total artifacts: {f_ct} files • {_fmt_size(b_ct)}")
+    for _, row in display_df.reset_index(drop=True).iterrows():
+        k = _row_key(row)
+        aid = str(row.get("Alarm", "unknown"))
+        if st.button("View draft", key=f"view_{k}"):
+            title = f"Draft: {aid}"
+            if HAS_MODAL:
+                with st.modal(title, key=f"modal_{k}"):
+                    _render_draft(row, k)
+            else:
+                with st.expander(title, expanded=True):
+                    _render_draft(row, k)
+else:
+    # Provide contextual warning when no data is yet present.
+    if not ALARM_FILES:
+        st.warning("No alarms matched the glob. Tip: if you launched from `ui/`, use `../demo/alarms/*.json` or pass absolute paths.")
+    else:
+        st.warning("No triage artifacts yet. Use the sidebar buttons to run triage.")
 
 st.caption("Security: obvious secrets redacted; paths constrained under repo root. Logs structured JSON.")

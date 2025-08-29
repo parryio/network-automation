@@ -1,17 +1,3 @@
-<<<<<<< HEAD
-"""Alarm triage core + CLI.
-
-New public API (importable):
-    triage_one(alarm_path: Path, out_dir: Path, offline=True, emit_draft=True)
-    triage_batch(alarms_glob: str, out_root: Path, offline=True, emit_draft=True)
-
-Legacy (deprecated) API kept as thin shims until next major:
-    process_alarm -> triage_one
-    process_batch -> triage_batch
-
-CLI (single alarm mode retained for backwards compatibility):
-    python -m scripts.alarm_triage.triage --alarm demo/alarms/A001.json --out outputs/A001 --offline
-=======
 """Single / batch alarm triage CLI (core artifact owner).
 
 Artifacts (owned here, NOT by UI):
@@ -19,7 +5,6 @@ Artifacts (owned here, NOT by UI):
  - snow_draft.json / snow_draft.md
  - draft.md (short markdown draft via servicenow.make_draft)
  - context/ pack + audit.jsonl
->>>>>>> 8cc0126 (UI overhaul)
 """
 
 from __future__ import annotations
@@ -29,11 +14,7 @@ import glob
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
-<<<<<<< HEAD
-from typing import Dict, Any, Iterable, List
-=======
 from typing import Dict, Any, List
->>>>>>> 8cc0126 (UI overhaul)
 
 import typer
 
@@ -73,9 +54,6 @@ def _zip_pack(out_dir: Path) -> Path:
     return pack_path
 
 
-<<<<<<< HEAD
-def _triage_single(alarm_path: Path, out_dir: Path, offline: bool = False, emit_draft: bool = True) -> Dict[str, Any]:
-=======
 def triage_one(
     alarm_path: Path,
     out_dir: Path,
@@ -87,7 +65,6 @@ def triage_one(
 
     Ownership: all artifacts produced here (UI must be read-only).
     """
->>>>>>> 8cc0126 (UI overhaul)
     out_dir.mkdir(parents=True, exist_ok=True)
     audit_file = out_dir / "audit.jsonl"
     _write_audit_line(audit_file, "start", alarm=str(alarm_path), **({"run_id": run_id} if run_id else {}))
@@ -137,33 +114,6 @@ def triage_one(
     }
 
 
-<<<<<<< HEAD
-# ---------------- New exported functions --------------------------------------
-def triage_one(alarm_path: Path, out_dir: Path, offline: bool = True, emit_draft: bool = True, run_id: str | None = None):
-    """Triage a single alarm JSON file into an output directory.
-
-    Parameters mirror legacy process_alarm with extended args for future.
-    """
-    return _triage_single(alarm_path, out_dir, offline=offline, emit_draft=emit_draft)
-
-
-def triage_batch(alarms_glob: str, out_root: Path, offline: bool = True, emit_draft: bool = True, run_id: str | None = None):
-    """Triage all alarms matching a glob into per-alarm subdirectories under out_root."""
-    paths = sorted(Path().glob(alarms_glob))
-    results: List[Dict[str, Any]] = []
-    for p in paths:
-        if not p.is_file():
-            continue
-        try:
-            data = json.loads(p.read_text(encoding="utf-8"))
-        except Exception:
-            continue
-        if not isinstance(data, dict) or not data.get("id"):
-            continue
-        out_dir = out_root / p.stem
-        results.append(_triage_single(p, out_dir, offline=offline, emit_draft=emit_draft))
-    return results
-=======
 def triage_batch(
     pattern: str,
     out_dir: Path,
@@ -186,7 +136,6 @@ def triage_batch(
         res = triage_one(ap, single_dir, offline=offline, emit_draft=emit_draft, run_id=run_id)
         results.append(res)
     return {"count": len(results), "alarms": [r["alarm"].get("id") for r in results]}
->>>>>>> 8cc0126 (UI overhaul)
 
 
 @app.callback(invoke_without_command=True)
@@ -197,14 +146,6 @@ def cli(
     offline: bool = typer.Option(False, "--offline", help="Use offline demo data"),
     emit_draft: bool = typer.Option(True, "--emit-draft/--no-emit-draft", help="Write draft.md artifact"),
 ):
-<<<<<<< HEAD
-    """Process a single alarm. No subcommand required (simpler for CI)."""
-    if alarm and out:  # invoked directly
-        alarm_path = Path(alarm)
-        out_dir = Path(out)
-    result = triage_one(alarm_path, out_dir, offline=offline)
-    typer.echo(json.dumps({"status": "ok", "files": len(result["files"])}, indent=2))
-=======
     """Process a single alarm or a batch (core artifact ownership)."""
     if alarm and alarms:
         raise typer.BadParameter("Specify either --alarm or --alarms, not both")
@@ -216,7 +157,6 @@ def cli(
     else:
         summary = triage_batch(alarms, Path(out), offline=offline, emit_draft=emit_draft)
         typer.echo(json.dumps(summary, indent=2))
->>>>>>> 8cc0126 (UI overhaul)
 
 
 def main():  # pragma: no cover - entrypoint

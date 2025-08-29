@@ -5,3 +5,7 @@ backgroundColor = "#0c0f12"
 secondaryBackgroundColor = "#1d232b"
 textColor = "#e8e8e8"
 font = "monospace"
+
+[server]
+
+# Removed deprecated server.fileWatcher settings.
