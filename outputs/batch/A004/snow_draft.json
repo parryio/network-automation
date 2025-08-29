@@ -1,0 +1,30 @@
+{
+  "number": null,
+  "short_description": "Alarm A004 Power event detected; sudden drop in environmental telemetry on rtr-site001-core (site001)",
+  "description": "Symptom: Power event detected; sudden drop in environmental telemetry\nSite: site001\nDevice: rtr-site001-core\nIP: 10.1.1.1\nSeverity: critical\nTimestamp: 2025-08-24T03:55:27Z",
+  "category": "network",
+  "impact": 1,
+  "urgency": 1,
+  "cmdb_ci": "rtr-site001-core",
+  "location": "site001",
+  "attachments": [
+    "site001.txt",
+    "prior_incidents.json",
+    "config.txt"
+  ],
+  "alarm_id": "A004",
+  "severity": "critical",
+  "site": "site001",
+  "device": "rtr-site001-core",
+  "ip": "10.1.1.1",
+  "timestamp": "2025-08-24T03:55:27Z",
+  "generated_at": "2025-08-27T18:44:08.129887+00:00",
+  "insights": {
+    "scope": "Device only (isolated)",
+    "reason": "Target unreachable while all discovered neighbors responded successfully.",
+    "next_steps": [
+      "Check device power/CPU, mgmt reachability, console access.",
+      "Capture additional diagnostics (interface counters, routing protocol summaries)."
+    ]
+  }
+}

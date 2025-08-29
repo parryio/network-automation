@@ -1,0 +1,62 @@
+[
+  {
+    "alarm_id": "A001",
+    "rc": 0,
+    "validate_s": 0.0064124489999812795,
+    "total_s": 0.006412790000013047,
+    "artifacts": {
+      "validation.json": true,
+      "snow_draft.json": true,
+      "snow_draft.md": true,
+      "context/prior_incidents.json": true,
+      "context/config.txt": true,
+      "A001_pack.zip": true
+    },
+    "success": true
+  },
+  {
+    "alarm_id": "A002",
+    "rc": 0,
+    "validate_s": 0.005414735999920595,
+    "total_s": 0.005415035999931206,
+    "artifacts": {
+      "validation.json": true,
+      "snow_draft.json": true,
+      "snow_draft.md": true,
+      "context/prior_incidents.json": true,
+      "context/config.txt": true,
+      "A002_pack.zip": true
+    },
+    "success": true
+  },
+  {
+    "alarm_id": "A003",
+    "rc": 0,
+    "validate_s": 0.005361245000017334,
+    "total_s": 0.005361506000099325,
+    "artifacts": {
+      "validation.json": true,
+      "snow_draft.json": true,
+      "snow_draft.md": true,
+      "context/prior_incidents.json": true,
+      "context/config.txt": true,
+      "A003_pack.zip": true
+    },
+    "success": true
+  },
+  {
+    "alarm_id": "A004",
+    "rc": 0,
+    "validate_s": 0.0053789390000247295,
+    "total_s": 0.005379188999995677,
+    "artifacts": {
+      "validation.json": true,
+      "snow_draft.json": true,
+      "snow_draft.md": true,
+      "context/prior_incidents.json": true,
+      "context/config.txt": true,
+      "A004_pack.zip": true
+    },
+    "success": true
+  }
+]

@@ -1,0 +1,14 @@
+{"ts": "2025-08-27T18:43:28.899244+00:00", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A004.json"}
+{"ts": "2025-08-27T18:43:28.900068+00:00", "event": "loaded", "neighbors": {"sw-site001-edge01": "10.1.2.11", "sw-site001-edge02": "10.1.2.12"}}
+{"ts": "2025-08-27T18:43:28.900387+00:00", "event": "validated", "count": 3}
+{"ts": "2025-08-27T18:43:28.901255+00:00", "event": "context_built", "diagram": "site001.txt", "prior_incidents": "prior_incidents.json", "config": "config.txt"}
+{"ts": "2025-08-27T18:43:28.901672+00:00", "event": "snow_draft", "attachments": ["site001.txt", "prior_incidents.json", "config.txt"]}
+{"ts": "2025-08-27T18:43:28.903766+00:00", "event": "packaged", "zip": "A004_pack.zip"}
+{"ts": "2025-08-27T18:43:28.903872+00:00", "event": "done"}
+{"ts": "2025-08-27T18:44:08.127636+00:00", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A004.json"}
+{"ts": "2025-08-27T18:44:08.128383+00:00", "event": "loaded", "neighbors": {"sw-site001-edge01": "10.1.2.11", "sw-site001-edge02": "10.1.2.12"}}
+{"ts": "2025-08-27T18:44:08.128755+00:00", "event": "validated", "count": 3}
+{"ts": "2025-08-27T18:44:08.129779+00:00", "event": "context_built", "diagram": "site001.txt", "prior_incidents": "prior_incidents.json", "config": "config.txt"}
+{"ts": "2025-08-27T18:44:08.130282+00:00", "event": "snow_draft", "attachments": ["site001.txt", "prior_incidents.json", "config.txt"]}
+{"ts": "2025-08-27T18:44:08.132390+00:00", "event": "packaged", "zip": "A004_pack.zip"}
+{"ts": "2025-08-27T18:44:08.132493+00:00", "event": "done"}
