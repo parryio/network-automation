@@ -1,6 +1,4 @@
-![demo](https://github.com/parryio/network-automation/actions/workflows/ci.yml/badge.svg)
-
-[![demo](https://github.com/parryio/network-automation/actions/workflows/ci.yml/badge.svg)](https://github.com/parryio/network-automation/actions/workflows/ci.yml)
+[![CI (alarm-triage)](https://github.com/parryio/network-automation/actions/workflows/ci-alarm-triage.yml/badge.svg?branch=main)](https://github.com/parryio/network-automation/actions/workflows/ci-alarm-triage.yml)
 
 **Download demo artifacts:** See the “demo-artifacts” attachment in the latest successful run under **Actions → demo**. It includes:
 - `reports/baseline_report.csv`
