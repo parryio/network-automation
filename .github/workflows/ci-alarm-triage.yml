@@ -4,44 +4,51 @@ on:
   push:
   pull_request:
 
-permissions:
-  contents: read
+concurrency:
+  group: ci-alarm-triage-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test:
+  ci:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Set up Python
+
+      - name: Setup Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Cache pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: ${{ runner.os }}-pip-
-      - name: Install deps
+
+      - name: Create venv & install deps
+        shell: bash
         run: |
+          python -m venv .venv
+          source .venv/bin/activate
           python -m pip install -U pip wheel
           pip install -r requirements.txt
-      - name: Run unit tests
-        env:
-          PYTHONPATH: ${{ github.workspace }}
-        run: pytest -q
-      - name: Run offline batch demo
-        env:
-          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Run tests
+        shell: bash
         run: |
+          source .venv/bin/activate
+          pytest -q
+
+      - name: Offline batch triage (produce outputs)
+        shell: bash
+        run: |
+          source .venv/bin/activate
           python -m scripts.alarm_triage.triage \
             --alarms "demo/alarms/*.json" \
             --out outputs/batch \
             --offline --emit-draft
-      - name: Upload artifacts (outputs)
+
+      - name: Upload outputs artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: outputs
           path: outputs/**
+          if-no-files-found: warn
