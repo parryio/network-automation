@@ -1,54 +1,36 @@
-{"ts": "2025-08-29T19:25:43.815175Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A001.json", "run_id": "7f7b4ae9-4fd0-4f5e-89d1-0842a8af7291"}
-{"ts": "2025-08-29T19:25:43.815564Z", "event": "alarm_loaded", "id": "A001", "run_id": "7f7b4ae9-4fd0-4f5e-89d1-0842a8af7291"}
-{"ts": "2025-08-29T19:25:43.817628Z", "event": "context_built", "incidents_count": 2, "has_config": true, "run_id": "7f7b4ae9-4fd0-4f5e-89d1-0842a8af7291"}
-{"ts": "2025-08-29T19:25:43.818488Z", "event": "probes_gathered", "offline": true, "run_id": "7f7b4ae9-4fd0-4f5e-89d1-0842a8af7291"}
-{"ts": "2025-08-29T19:25:43.818684Z", "event": "insights_ready", "run_id": "7f7b4ae9-4fd0-4f5e-89d1-0842a8af7291"}
-{"ts": "2025-08-29T19:25:43.819132Z", "event": "snow_draft_written", "run_id": "7f7b4ae9-4fd0-4f5e-89d1-0842a8af7291"}
-{"ts": "2025-08-29T19:25:43.819937Z", "event": "validation_written", "run_id": "7f7b4ae9-4fd0-4f5e-89d1-0842a8af7291"}
-{"ts": "2025-08-29T19:25:43.820543Z", "event": "draft_written", "run_id": "7f7b4ae9-4fd0-4f5e-89d1-0842a8af7291"}
-{"ts": "2025-08-29T19:25:43.823104Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/A001/A001_pack.zip", "run_id": "7f7b4ae9-4fd0-4f5e-89d1-0842a8af7291"}
-{"ts": "2025-08-29T19:26:25.489883Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A001.json", "run_id": "ceeaddae-3565-4f40-b3ce-f95a67b2dfc1"}
-{"ts": "2025-08-29T19:26:25.490068Z", "event": "alarm_loaded", "id": "A001", "run_id": "ceeaddae-3565-4f40-b3ce-f95a67b2dfc1"}
-{"ts": "2025-08-29T19:26:25.491777Z", "event": "context_built", "incidents_count": 2, "has_config": true, "run_id": "ceeaddae-3565-4f40-b3ce-f95a67b2dfc1"}
-{"ts": "2025-08-29T19:26:25.492206Z", "event": "probes_gathered", "offline": true, "run_id": "ceeaddae-3565-4f40-b3ce-f95a67b2dfc1"}
-{"ts": "2025-08-29T19:26:25.492292Z", "event": "insights_ready", "run_id": "ceeaddae-3565-4f40-b3ce-f95a67b2dfc1"}
-{"ts": "2025-08-29T19:26:25.492700Z", "event": "snow_draft_written", "run_id": "ceeaddae-3565-4f40-b3ce-f95a67b2dfc1"}
-{"ts": "2025-08-29T19:26:25.493018Z", "event": "validation_written", "run_id": "ceeaddae-3565-4f40-b3ce-f95a67b2dfc1"}
-{"ts": "2025-08-29T19:26:25.493274Z", "event": "draft_written", "run_id": "ceeaddae-3565-4f40-b3ce-f95a67b2dfc1"}
-{"ts": "2025-08-29T19:26:25.496004Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/A001/A001_pack.zip", "run_id": "ceeaddae-3565-4f40-b3ce-f95a67b2dfc1"}
-{"ts": "2025-08-29T19:26:27.068322Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A001.json", "run_id": "42964169-b6f3-425b-ae38-4436d8dda6dc"}
-{"ts": "2025-08-29T19:26:27.069043Z", "event": "alarm_loaded", "id": "A001", "run_id": "42964169-b6f3-425b-ae38-4436d8dda6dc"}
-{"ts": "2025-08-29T19:26:27.069966Z", "event": "context_built", "incidents_count": 2, "has_config": true, "run_id": "42964169-b6f3-425b-ae38-4436d8dda6dc"}
-{"ts": "2025-08-29T19:26:27.071000Z", "event": "probes_gathered", "offline": true, "run_id": "42964169-b6f3-425b-ae38-4436d8dda6dc"}
-{"ts": "2025-08-29T19:26:27.071202Z", "event": "insights_ready", "run_id": "42964169-b6f3-425b-ae38-4436d8dda6dc"}
-{"ts": "2025-08-29T19:26:27.072282Z", "event": "snow_draft_written", "run_id": "42964169-b6f3-425b-ae38-4436d8dda6dc"}
-{"ts": "2025-08-29T19:26:27.072932Z", "event": "validation_written", "run_id": "42964169-b6f3-425b-ae38-4436d8dda6dc"}
-{"ts": "2025-08-29T19:26:27.073241Z", "event": "draft_written", "run_id": "42964169-b6f3-425b-ae38-4436d8dda6dc"}
-{"ts": "2025-08-29T19:26:27.075874Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/A001/A001_pack.zip", "run_id": "42964169-b6f3-425b-ae38-4436d8dda6dc"}
-{"ts": "2025-08-29T19:26:28.444817Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A001.json", "run_id": "f59a9893-e7b5-4e13-a7b6-8b1964ae6f26"}
-{"ts": "2025-08-29T19:26:28.445255Z", "event": "alarm_loaded", "id": "A001", "run_id": "f59a9893-e7b5-4e13-a7b6-8b1964ae6f26"}
-{"ts": "2025-08-29T19:26:28.446214Z", "event": "context_built", "incidents_count": 2, "has_config": true, "run_id": "f59a9893-e7b5-4e13-a7b6-8b1964ae6f26"}
-{"ts": "2025-08-29T19:26:28.446559Z", "event": "probes_gathered", "offline": true, "run_id": "f59a9893-e7b5-4e13-a7b6-8b1964ae6f26"}
-{"ts": "2025-08-29T19:26:28.446659Z", "event": "insights_ready", "run_id": "f59a9893-e7b5-4e13-a7b6-8b1964ae6f26"}
-{"ts": "2025-08-29T19:26:28.447061Z", "event": "snow_draft_written", "run_id": "f59a9893-e7b5-4e13-a7b6-8b1964ae6f26"}
-{"ts": "2025-08-29T19:26:28.447997Z", "event": "validation_written", "run_id": "f59a9893-e7b5-4e13-a7b6-8b1964ae6f26"}
-{"ts": "2025-08-29T19:26:28.448281Z", "event": "draft_written", "run_id": "f59a9893-e7b5-4e13-a7b6-8b1964ae6f26"}
-{"ts": "2025-08-29T19:26:28.450877Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/A001/A001_pack.zip", "run_id": "f59a9893-e7b5-4e13-a7b6-8b1964ae6f26"}
-{"ts": "2025-08-29T19:33:10.728227Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A001.json", "run_id": "e14a359d-f519-4389-9047-5585c02ea75c"}
-{"ts": "2025-08-29T19:33:10.728464Z", "event": "alarm_loaded", "id": "A001", "run_id": "e14a359d-f519-4389-9047-5585c02ea75c"}
-{"ts": "2025-08-29T19:33:10.729385Z", "event": "context_built", "incidents_count": 2, "has_config": true, "run_id": "e14a359d-f519-4389-9047-5585c02ea75c"}
-{"ts": "2025-08-29T19:33:10.729725Z", "event": "probes_gathered", "offline": true, "run_id": "e14a359d-f519-4389-9047-5585c02ea75c"}
-{"ts": "2025-08-29T19:33:10.729814Z", "event": "insights_ready", "run_id": "e14a359d-f519-4389-9047-5585c02ea75c"}
-{"ts": "2025-08-29T19:33:10.730258Z", "event": "snow_draft_written", "run_id": "e14a359d-f519-4389-9047-5585c02ea75c"}
-{"ts": "2025-08-29T19:33:10.730588Z", "event": "validation_written", "run_id": "e14a359d-f519-4389-9047-5585c02ea75c"}
-{"ts": "2025-08-29T19:33:10.730825Z", "event": "draft_written", "run_id": "e14a359d-f519-4389-9047-5585c02ea75c"}
-{"ts": "2025-08-29T19:33:10.733682Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/A001/A001_pack.zip", "run_id": "e14a359d-f519-4389-9047-5585c02ea75c"}
-{"ts": "2025-08-29T19:33:35.959583Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A001.json", "run_id": "bfa7ea7a-068a-4073-a027-f7861d746f7a"}
-{"ts": "2025-08-29T19:33:35.959744Z", "event": "alarm_loaded", "id": "A001", "run_id": "bfa7ea7a-068a-4073-a027-f7861d746f7a"}
-{"ts": "2025-08-29T19:33:35.960655Z", "event": "context_built", "incidents_count": 2, "has_config": true, "run_id": "bfa7ea7a-068a-4073-a027-f7861d746f7a"}
-{"ts": "2025-08-29T19:33:35.960992Z", "event": "probes_gathered", "offline": true, "run_id": "bfa7ea7a-068a-4073-a027-f7861d746f7a"}
-{"ts": "2025-08-29T19:33:35.961096Z", "event": "insights_ready", "run_id": "bfa7ea7a-068a-4073-a027-f7861d746f7a"}
-{"ts": "2025-08-29T19:33:35.961512Z", "event": "snow_draft_written", "run_id": "bfa7ea7a-068a-4073-a027-f7861d746f7a"}
-{"ts": "2025-08-29T19:33:35.961827Z", "event": "validation_written", "run_id": "bfa7ea7a-068a-4073-a027-f7861d746f7a"}
-{"ts": "2025-08-29T19:33:35.962066Z", "event": "draft_written", "run_id": "bfa7ea7a-068a-4073-a027-f7861d746f7a"}
-{"ts": "2025-08-29T19:33:35.964790Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/A001/A001_pack.zip", "run_id": "bfa7ea7a-068a-4073-a027-f7861d746f7a"}
+{"ts": "2025-08-29T20:09:03.138716Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A001.json", "run_id": "21e6628a-4ebc-4fe3-b103-970d20c65c23"}
+{"ts": "2025-08-29T20:09:03.138933Z", "event": "alarm_loaded", "id": "A001", "run_id": "21e6628a-4ebc-4fe3-b103-970d20c65c23"}
+{"ts": "2025-08-29T20:09:03.139717Z", "event": "context_built", "incidents_count": 2, "has_config": true, "run_id": "21e6628a-4ebc-4fe3-b103-970d20c65c23"}
+{"ts": "2025-08-29T20:09:03.139996Z", "event": "probes_gathered", "offline": true, "run_id": "21e6628a-4ebc-4fe3-b103-970d20c65c23"}
+{"ts": "2025-08-29T20:09:03.140062Z", "event": "insights_ready", "run_id": "21e6628a-4ebc-4fe3-b103-970d20c65c23"}
+{"ts": "2025-08-29T20:09:03.140393Z", "event": "snow_draft_written", "run_id": "21e6628a-4ebc-4fe3-b103-970d20c65c23"}
+{"ts": "2025-08-29T20:09:03.140656Z", "event": "validation_written", "run_id": "21e6628a-4ebc-4fe3-b103-970d20c65c23"}
+{"ts": "2025-08-29T20:09:03.140836Z", "event": "draft_written", "run_id": "21e6628a-4ebc-4fe3-b103-970d20c65c23"}
+{"ts": "2025-08-29T20:09:03.143293Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/A001/A001_pack.zip", "run_id": "21e6628a-4ebc-4fe3-b103-970d20c65c23"}
+{"ts": "2025-08-29T20:09:18.715960Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A001.json", "run_id": "dee67774-25d7-4794-85b1-c79d5e0a3be5"}
+{"ts": "2025-08-29T20:09:18.716139Z", "event": "alarm_loaded", "id": "A001", "run_id": "dee67774-25d7-4794-85b1-c79d5e0a3be5"}
+{"ts": "2025-08-29T20:09:18.717047Z", "event": "context_built", "incidents_count": 2, "has_config": true, "run_id": "dee67774-25d7-4794-85b1-c79d5e0a3be5"}
+{"ts": "2025-08-29T20:09:18.717435Z", "event": "probes_gathered", "offline": true, "run_id": "dee67774-25d7-4794-85b1-c79d5e0a3be5"}
+{"ts": "2025-08-29T20:09:18.717526Z", "event": "insights_ready", "run_id": "dee67774-25d7-4794-85b1-c79d5e0a3be5"}
+{"ts": "2025-08-29T20:09:18.717940Z", "event": "snow_draft_written", "run_id": "dee67774-25d7-4794-85b1-c79d5e0a3be5"}
+{"ts": "2025-08-29T20:09:18.718265Z", "event": "validation_written", "run_id": "dee67774-25d7-4794-85b1-c79d5e0a3be5"}
+{"ts": "2025-08-29T20:09:18.718498Z", "event": "draft_written", "run_id": "dee67774-25d7-4794-85b1-c79d5e0a3be5"}
+{"ts": "2025-08-29T20:09:18.721147Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/A001/A001_pack.zip", "run_id": "dee67774-25d7-4794-85b1-c79d5e0a3be5"}
+{"ts": "2025-08-29T20:09:30.740147Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A001.json", "run_id": "d5d132f7-31af-4f2a-b86d-07f7136d3ca0"}
+{"ts": "2025-08-29T20:09:30.740903Z", "event": "alarm_loaded", "id": "A001", "run_id": "d5d132f7-31af-4f2a-b86d-07f7136d3ca0"}
+{"ts": "2025-08-29T20:09:30.742872Z", "event": "context_built", "incidents_count": 2, "has_config": true, "run_id": "d5d132f7-31af-4f2a-b86d-07f7136d3ca0"}
+{"ts": "2025-08-29T20:09:30.743525Z", "event": "probes_gathered", "offline": true, "run_id": "d5d132f7-31af-4f2a-b86d-07f7136d3ca0"}
+{"ts": "2025-08-29T20:09:30.743617Z", "event": "insights_ready", "run_id": "d5d132f7-31af-4f2a-b86d-07f7136d3ca0"}
+{"ts": "2025-08-29T20:09:30.744320Z", "event": "snow_draft_written", "run_id": "d5d132f7-31af-4f2a-b86d-07f7136d3ca0"}
+{"ts": "2025-08-29T20:09:30.744814Z", "event": "validation_written", "run_id": "d5d132f7-31af-4f2a-b86d-07f7136d3ca0"}
+{"ts": "2025-08-29T20:09:30.745324Z", "event": "draft_written", "run_id": "d5d132f7-31af-4f2a-b86d-07f7136d3ca0"}
+{"ts": "2025-08-29T20:09:30.748732Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/A001/A001_pack.zip", "run_id": "d5d132f7-31af-4f2a-b86d-07f7136d3ca0"}
+{"ts": "2025-08-29T20:09:50.550758Z", "event": "start", "alarm": "/workspaces/network-automation/demo/alarms/A001.json", "run_id": "ee68fc41-1529-4b39-b896-82221b5c8324"}
+{"ts": "2025-08-29T20:09:50.551449Z", "event": "alarm_loaded", "id": "A001", "run_id": "ee68fc41-1529-4b39-b896-82221b5c8324"}
+{"ts": "2025-08-29T20:09:50.554208Z", "event": "context_built", "incidents_count": 2, "has_config": true, "run_id": "ee68fc41-1529-4b39-b896-82221b5c8324"}
+{"ts": "2025-08-29T20:09:50.554898Z", "event": "probes_gathered", "offline": true, "run_id": "ee68fc41-1529-4b39-b896-82221b5c8324"}
+{"ts": "2025-08-29T20:09:50.555214Z", "event": "insights_ready", "run_id": "ee68fc41-1529-4b39-b896-82221b5c8324"}
+{"ts": "2025-08-29T20:09:50.556153Z", "event": "snow_draft_written", "run_id": "ee68fc41-1529-4b39-b896-82221b5c8324"}
+{"ts": "2025-08-29T20:09:50.556820Z", "event": "validation_written", "run_id": "ee68fc41-1529-4b39-b896-82221b5c8324"}
+{"ts": "2025-08-29T20:09:50.557276Z", "event": "draft_written", "run_id": "ee68fc41-1529-4b39-b896-82221b5c8324"}
+{"ts": "2025-08-29T20:09:50.560106Z", "event": "pack_zipped", "pack": "/workspaces/network-automation/outputs/A001/A001_pack.zip", "run_id": "ee68fc41-1529-4b39-b896-82221b5c8324"}

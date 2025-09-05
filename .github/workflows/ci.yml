@@ -41,7 +41,8 @@ jobs:
           python -m scripts.push_change --offline --before demo/configs/edge-rtr01.cfg --name edge-rtr01 \
             --ntp "1.1.1.1,1.0.0.1" --banner "Authorized access only" \
             --disable-http --fix-ssh --timestamps \
-            --diffs diffs --write-after --after-out configs/after_demo
+            --diffs diffs --write-after --after-out configs/after_demo \
+            --plan-out reports/change_plan.md --plan-json reports/change_plan.json
           python -m scripts.audit_baseline --configs configs/after_demo --report reports/after_baseline_report.csv
 
       - name: Upload artifacts
@@ -50,6 +51,7 @@ jobs:
           name: ci-artifacts
           path: |
             reports/*.csv
+            reports/change_plan.*
             diffs/**
             configs/after_demo/**
           if-no-files-found: warn

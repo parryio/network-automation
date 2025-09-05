@@ -1,11 +1,15 @@
 from __future__ import annotations
 import re
 from pathlib import Path
-from typing import List
+from typing import List, Dict, Any
 import difflib
 import typer
 from rich import print
 from rich.table import Table
+import json
+import hashlib
+import subprocess
+from scripts import __version__ as tool_version
 from scripts.utils import (
     load_devices, get_password, connect, enable_if_needed,
     ios_run_cmd, ios_config_set, atomic_write, ensure_dir, save_ios
@@ -41,6 +45,119 @@ def unified_diff_text(before: str, after: str, name: str) -> str:
         n=3,
     )
     return "".join(diff)
+
+def get_git_rev() -> str:
+    try:
+        return subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return "unknown"
+
+def sha256_hash(content: str) -> str:
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+def sha256_file(path: Path) -> str:
+    try:
+        h = hashlib.sha256()
+        with path.open("rb") as f:
+            for chunk in iter(lambda: f.read(8192), b""):
+                h.update(chunk)
+        return h.hexdigest()
+    except FileNotFoundError:
+        return ""
+
+def render_plan_md(plan: Dict[str, Any]) -> str:
+    lines: List[str] = []
+    lines.append(f"# Change Plan — {plan.get('device','unknown')}")
+    lines.append("")
+    # Intent
+    lines.append("## Intent")
+    intent = plan.get("intent", {})
+    if not intent:
+        lines.append("(no changes)")
+    else:
+        for k in sorted(intent.keys()):
+            v = intent[k]
+            v_str = ", ".join(map(str, v)) if isinstance(v, list) else str(v)
+            lines.append(f"- {k}: {v_str}")
+    lines.append("")
+    # Inputs
+    lines.append("## Inputs")
+    inputs = plan.get("inputs", {})
+    before = inputs.get("before", {})
+    after = inputs.get("after", {})
+    lines.append(f"- before: {before.get('path','')} (sha256: {before.get('sha256','')})")
+    lines.append(f"- after: {after.get('path','')} (sha256: {after.get('sha256','')})")
+    lines.append("")
+    # Commands
+    lines.append("## Commands to Apply")
+    cmds: List[str] = plan.get("commands", [])
+    if cmds:
+        lines.append("```")
+        lines.extend(cmds)
+        lines.append("```")
+    else:
+        lines.append("(none)")
+    lines.append("")
+    # Diff
+    lines.append("## Unified Diff")
+    diff_text = plan.get("diff", "")
+    if diff_text:
+        lines.append("```diff")
+        lines.append(diff_text.rstrip("\n"))
+        lines.append("```")
+    else:
+        lines.append("(no diff)")
+    diff_path = plan.get("diff_path", "")
+    if diff_path:
+        lines.append("")
+        lines.append(f"Diff path: {diff_path}")
+    lines.append("")
+    # Rollback
+    lines.append("## Rollback")
+    rollback = plan.get("rollback", [])
+    if rollback:
+        lines.append("```")
+        lines.extend(rollback)
+        lines.append("```")
+    else:
+        lines.append("(refer to restoring the 'before' configuration)")
+    lines.append("")
+    # Post-Checks
+    lines.append("## Post-Checks")
+    post = plan.get("post_checks", {})
+    report = post.get("report", "")
+    summary = post.get("summary", {})
+    if report or summary:
+        if report:
+            lines.append(f"report: {report}")
+        if summary:
+            lines.append(f"summary: passed={summary.get('passed',0)}, failed={summary.get('failed',0)}")
+    else:
+        lines.append("(not available)")
+    lines.append("")
+    # Provenance
+    prov = plan.get("provenance", {})
+    lines.append("## Provenance")
+    lines.append(f"- tool_version: {prov.get('tool_version','')}")
+    lines.append(f"- git_rev: {prov.get('git_rev','')}")
+    lines.append(f"- offline: {prov.get('offline', False)}")
+    return "\n".join(lines) + "\n"
+
+def collect_post_checks() -> Dict[str, Any]:
+    # Try to read a standard after-baseline report if present
+    report_csv = Path("reports/after_baseline_report.csv")
+    result: Dict[str, Any] = {}
+    if report_csv.exists():
+        # Deterministic simple tally: count lines with PASS/FAIL if present
+        try:
+            text = report_csv.read_text(encoding="utf-8", errors="ignore")
+            passed = sum(1 for ln in text.splitlines() if ",PASS" in ln)
+            failed = sum(1 for ln in text.splitlines() if ",FAIL" in ln)
+            result = {"report": str(report_csv), "summary": {"passed": passed, "failed": failed}}
+        except Exception:
+            result = {"report": str(report_csv)}
+    return result
+
 
 # ---------- Offline text transforms (idempotent) ----------
 def apply_ntp_to_config(text: str, desired: List[str], enforce: bool) -> str:
@@ -111,6 +228,8 @@ def main(
     enforce: bool = typer.Option(False, "--enforce", help="Remove extra NTP servers not in desired set"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Show plan, do not apply"),
     diffs: Path = typer.Option(Path("diffs"), "--diffs", help="Folder to write unified diffs"),
+    plan_out: Path = typer.Option(None, "--plan-out", help="Path to write deterministic change plan (Markdown)"),
+    plan_json: Path = typer.Option(None, "--plan-json", help="Optional path to write change plan as JSON"),
     # offline demo mode
     offline: bool = typer.Option(False, "--offline", help="Offline demo mode (no SSH)"),
     before: Path = typer.Option(None, "--before", help="Path to a .cfg to treat as 'before' (offline only)"),
@@ -151,10 +270,6 @@ def main(
         table.add_row(name, "\n".join(cmds) if cmds else "(no changes)")
         print(table)
 
-        if dry_run or not cmds:
-            print("[bold yellow]Dry-run only. No changes applied.[/bold yellow]" if dry_run else "[bold]No changes necessary.[/bold]")
-            return
-
         # Apply transforms to produce AFTER text
         after_text = before_text
         if desired_ntp:
@@ -169,15 +284,78 @@ def main(
         if timestamps:
             after_text = apply_timestamps(after_text, True)
 
-        # Diff + optional write-after
+        # Diff (always compute; write if not empty or if a plan is requested)
         diff_text = unified_diff_text(before_text, after_text, name)
-        atomic_write(diffs_dir / f"{name}.diff", diff_text)
-        print(f"Diff written to: [bold]{diffs_dir / (name + '.diff')}[/bold]")
+        diff_path = diffs_dir / f"{name}.diff"
+        if diff_text or plan_out or plan_json:
+            atomic_write(diff_path, diff_text)
+            print(f"Diff written to: [bold]{diff_path}[/bold]")
 
         if write_after:
             outdir = ensure_dir(after_out)
             atomic_write(outdir / f"{name}.cfg", after_text if after_text.endswith("\n") else (after_text + "\n"))
             print(f"After-config written to: [bold]{outdir / (name + '.cfg')}[/bold]")
+
+        # Build deterministic plan(s) if requested
+        if plan_out or plan_json:
+            intent: Dict[str, Any] = {
+                "ntp": [s for s in desired_ntp],
+                "banner": banner if banner else "",
+                "disable_http": bool(disable_http),
+                "fix_ssh": bool(fix_ssh),
+                "timestamps": bool(timestamps),
+                "enforce": bool(enforce),
+            }
+            # Prune empty/falsey while preserving deterministic key order in Markdown rendering
+            intent = {k: v for k, v in intent.items() if (v not in ([], "") and v is not False)}
+
+            # Paths and hashes
+            after_path = (ensure_dir(after_out) / f"{name}.cfg") if write_after else None
+            inputs = {
+                "before": {"path": str(before), "sha256": sha256_file(before)},
+                "after": {
+                    "path": str(after_path) if after_path else "",
+                    # If not written to disk, hash the computed text deterministically
+                    "sha256": sha256_file(after_path) if after_path else sha256_hash(after_text),
+                },
+            }
+
+            plan: Dict[str, Any] = {
+                "device": name,
+                "intent": intent,
+                "inputs": inputs,
+                "commands": cmds,
+                "diff_path": str(diff_path),
+                "diff": diff_text,
+                "rollback": [
+                    "! Restore the saved 'before' configuration if needed",
+                    "configure replace <PATH-TO-BEFORE> force",
+                ],
+                "post_checks": collect_post_checks(),
+                "provenance": {
+                    "tool_version": tool_version,
+                    "git_rev": get_git_rev(),
+                    "offline": True,
+                    "artifacts": {
+                        "diff_sha256": sha256_file(diff_path) if (plan_out or plan_json) else "",
+                    },
+                },
+            }
+
+            if plan_json:
+                ensure_dir(Path(plan_json).parent)
+                atomic_write(Path(plan_json), json.dumps(plan, indent=2, sort_keys=True) + "\n")
+                print(f"JSON plan written to: [bold]{plan_json}[/bold]")
+            if plan_out:
+                ensure_dir(Path(plan_out).parent)
+                atomic_write(Path(plan_out), render_plan_md(plan))
+                print(f"Markdown plan written to: [bold]{plan_out}[/bold]")
+
+        # Respect dry-run by not applying to device (this is offline anyway)
+        if dry_run or not cmds:
+            print("[bold yellow]Dry-run only. No changes applied.[/bold yellow]" if dry_run else "[bold]No changes necessary.[/bold]")
+            return
+
         return
 
     # -------- LIVE MODE (unchanged behavior) --------
