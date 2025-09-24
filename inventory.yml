@@ -1,0 +1,9 @@
+devices:
+  - name: core-sw01
+    platform: cisco_ios
+    running: sample/core-sw01.running.cfg
+    baseline: sample/baseline/core-sw01.cfg
+  - name: edge-rtr01
+    platform: cisco_ios
+    running: sample/edge-rtr01.running.cfg
+    baseline: sample/baseline/edge-rtr01.cfg
