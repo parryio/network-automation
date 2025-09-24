@@ -1,0 +1,25 @@
+platforms:
+  - cisco_ios
+rules:
+  - id: ntp_servers
+    severity: medium
+    match:
+      contains_lines:
+        - "ntp server 1.1.1.1"
+        - "ntp server 1.0.0.1"
+    remediate:
+      commands:
+        - "conf t"
+        - "ntp server 1.1.1.1"
+        - "ntp server 1.0.0.1"
+        - "end"
+  - id: no_http_server
+    severity: high
+    match:
+      not_contains_lines:
+        - "ip http server"
+    remediate:
+      commands:
+        - "conf t"
+        - "no ip http server"
+        - "end"
